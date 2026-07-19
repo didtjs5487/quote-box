@@ -104,9 +104,9 @@ function renderQuotes() {
     card.className = 'quote-card';
     card.innerHTML = `
       <span class="quote-tag">${CATEGORY_LABEL[q.category] || CATEGORY_LABEL.quote}</span>
-      <p class="quote-text">${escapeHtml(q.text)}</p>
+      <p class="quote-text" title="눌러서 느낀 점 적기">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
-      ${q.note ? `<p class="quote-note">💭 ${escapeHtml(q.note)}</p>` : ''}
+      <div class="quote-note-slot">${q.note ? `<p class="quote-note" title="눌러서 수정">💭 ${escapeHtml(q.note)}</p>` : ''}</div>
       ${tags.length ? `<div class="quote-topics">${tags.map(t => `<span class="topic-pill" data-topic="${escapeHtml(t)}">#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
@@ -125,9 +125,49 @@ function renderQuotes() {
         setTagFilter(pill.dataset.topic);
       });
     });
+    const openNote = (e) => { e.stopPropagation(); openInlineNoteEditor(card, q); };
+    card.querySelector('.quote-text').addEventListener('click', openNote);
+    const noteDisplay = card.querySelector('.quote-note');
+    if (noteDisplay) noteDisplay.addEventListener('click', openNote);
     card.addEventListener('click', () => openEditModal(q.id));
     list.appendChild(card);
   });
+}
+
+function openInlineNoteEditor(card, q) {
+  const slot = card.querySelector('.quote-note-slot');
+  if (!slot || slot.querySelector('textarea')) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'quote-note-edit';
+  const ta = document.createElement('textarea');
+  ta.rows = 2;
+  ta.placeholder = '이 문장을 보고 느낀 점, 깨달은 것';
+  ta.value = q.note || '';
+  const actions = document.createElement('div');
+  actions.className = 'quote-note-edit-actions';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'btn btn-secondary btn-small-note';
+  cancelBtn.textContent = '취소';
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'btn btn-primary btn-small-note';
+  saveBtn.textContent = '저장';
+  actions.append(cancelBtn, saveBtn);
+  wrap.append(ta, actions);
+  wrap.addEventListener('click', (e) => e.stopPropagation());
+  cancelBtn.addEventListener('click', () => renderQuotes());
+  saveBtn.addEventListener('click', () => {
+    q.note = ta.value.trim();
+    saveQuotes(state.items);
+    renderQuotes();
+    pickToday();
+  });
+
+  slot.innerHTML = '';
+  slot.appendChild(wrap);
+  ta.focus();
 }
 
 function renderTagFilters() {
