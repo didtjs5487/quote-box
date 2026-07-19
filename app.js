@@ -87,6 +87,7 @@ function renderQuotes() {
     const q = state.search.trim().toLowerCase();
     items = items.filter(it => it.text.toLowerCase().includes(q)
       || (it.source || '').toLowerCase().includes(q)
+      || (it.note || '').toLowerCase().includes(q)
       || (it.tags || []).some(tag => tag.toLowerCase().includes(q)));
   }
 
@@ -105,6 +106,7 @@ function renderQuotes() {
       <span class="quote-tag">${CATEGORY_LABEL[q.category] || CATEGORY_LABEL.quote}</span>
       <p class="quote-text">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
+      ${q.note ? `<p class="quote-note">💭 ${escapeHtml(q.note)}</p>` : ''}
       ${tags.length ? `<div class="quote-topics">${tags.map(t => `<span class="topic-pill" data-topic="${escapeHtml(t)}">#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
@@ -186,14 +188,16 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   const text = textInput.value.trim();
   if (!text) return;
   const source = document.getElementById('quote-source').value.trim();
+  const note = document.getElementById('quote-note').value.trim();
   const category = document.getElementById('quote-category').value;
   const tags = parseTags(document.getElementById('quote-tags').value);
   state.items.push({
-    id: uid(), text, source, category, tags, favorite: false, createdAt: new Date().toISOString(),
+    id: uid(), text, source, note, category, tags, favorite: false, createdAt: new Date().toISOString(),
   });
   saveQuotes(state.items);
   textInput.value = '';
   document.getElementById('quote-source').value = '';
+  document.getElementById('quote-note').value = '';
   document.getElementById('quote-tags').value = '';
   renderQuotes();
   pickToday();
@@ -208,6 +212,7 @@ function openEditModal(id) {
   state.editingId = id;
   document.getElementById('edit-text').value = q.text;
   document.getElementById('edit-source').value = q.source || '';
+  document.getElementById('edit-note').value = q.note || '';
   document.getElementById('edit-tags').value = (q.tags || []).join(', ');
   document.getElementById('edit-category').value = q.category;
   editModal.classList.remove('hidden');
@@ -224,6 +229,7 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   if (!text) return;
   q.text = text;
   q.source = document.getElementById('edit-source').value.trim();
+  q.note = document.getElementById('edit-note').value.trim();
   q.tags = parseTags(document.getElementById('edit-tags').value);
   q.category = document.getElementById('edit-category').value;
   saveQuotes(state.items);
@@ -277,6 +283,7 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             id: it.id || uid(),
             text: it.text,
             source: it.source || '',
+            note: typeof it.note === 'string' ? it.note : '',
             tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string' && t.trim()) : [],
             category: CATEGORY_LABEL[it.category] ? it.category : 'quote',
             favorite: !!it.favorite,
