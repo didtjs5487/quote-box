@@ -55,7 +55,9 @@ button, input, select, textarea { font-family: inherit; }
   box-shadow: var(--shadow);
 }
 .today-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; color: #C9A98F; margin: 0 0 10px; text-transform: uppercase; }
-.today-text { font-family: var(--font-display); font-size: 20px; line-height: 1.5; margin: 0 0 8px; white-space: pre-wrap; }
+.today-text { font-family: var(--font-display); font-size: 20px; line-height: 1.5; margin: 0 0 8px; white-space: pre-wrap; cursor: pointer; }
+.today-text.clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.today-more { font-family: var(--font-mono); font-size: 11px; color: #C9A98F; background: none; border: none; padding: 0; margin: -4px 0 8px; cursor: pointer; text-decoration: underline; }
 .today-source { font-size: 12.5px; color: #C9A98F; margin: 0; }
 .today-card .icon-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.12); border-color: transparent; color: var(--paper); }
 

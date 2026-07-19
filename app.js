@@ -1,3 +1,7 @@
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
+
 /* ===================== Storage ===================== */
 const STORAGE_KEY = 'quoteBoxItems';
 
@@ -64,11 +68,25 @@ function pickToday() {
   const pool = state.items.filter(q => q.id !== state.todayId);
   const pick = (pool.length > 0 ? pool : state.items)[Math.floor(Math.random() * (pool.length > 0 ? pool.length : state.items.length))];
   state.todayId = pick.id;
-  document.getElementById('today-text').textContent = pick.text;
+  const textEl = document.getElementById('today-text');
+  const moreBtn = document.getElementById('btn-today-more');
+  textEl.textContent = pick.text;
+  textEl.classList.add('clamped');
+  moreBtn.textContent = '더보기';
   document.getElementById('today-source').textContent = pick.source ? `— ${pick.source}` : '';
   card.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    moreBtn.classList.toggle('hidden', textEl.scrollHeight <= textEl.clientHeight + 1);
+  });
 }
 document.getElementById('btn-shuffle').addEventListener('click', pickToday);
+document.getElementById('btn-today-more').addEventListener('click', () => {
+  const textEl = document.getElementById('today-text');
+  const moreBtn = document.getElementById('btn-today-more');
+  const expanded = textEl.classList.toggle('clamped') === false;
+  moreBtn.textContent = expanded ? '접기' : '더보기';
+});
+document.getElementById('today-text').addEventListener('click', () => document.getElementById('btn-today-more').click());
 
 /* ===================== Rendering ===================== */
 function renderQuotes() {
