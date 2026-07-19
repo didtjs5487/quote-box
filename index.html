@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>명언함 | 인생의 문장들</title>
+<meta name="theme-color" content="#2B2A28">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1 class="brand">명언함</h1>
+    <p class="tagline">마음에 남는 명언·명대사·명장면을 모아두는 곳</p>
+  </div>
+  <button id="btn-export" class="icon-btn" title="내보내기 / 가져오기" aria-label="내보내기 / 가져오기">⚙️</button>
+</header>
+
+<main class="app-main">
+
+  <!-- TODAY'S PICK -->
+  <section id="today-pick" class="today-card hidden">
+    <p class="today-label">오늘의 한마디</p>
+    <p class="today-text" id="today-text"></p>
+    <p class="today-source" id="today-source"></p>
+    <button id="btn-shuffle" class="icon-btn" title="다른 문장 보기" aria-label="다른 문장 보기">🎲</button>
+  </section>
+
+  <!-- ADD FORM -->
+  <form id="form-quote-add" class="quote-add-form">
+    <textarea id="quote-text" rows="2" placeholder="마음에 남는 문장을 적어보세요…" required></textarea>
+    <input type="text" id="quote-source" placeholder="출처 (선택, 예: 영화 인터스텔라, 괴테)">
+    <div class="quote-add-row2">
+      <select id="quote-category">
+        <option value="quote">💬 명언</option>
+        <option value="line">🎬 명대사</option>
+        <option value="scene">🎞️ 명장면</option>
+      </select>
+      <button type="submit" class="btn btn-primary">담아두기</button>
+    </div>
+  </form>
+
+  <!-- SEARCH -->
+  <input type="search" id="search-input" class="search-input" placeholder="검색…">
+
+  <!-- FILTERS -->
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all">전체</button>
+    <button class="filter-btn" data-filter="quote">💬 명언</button>
+    <button class="filter-btn" data-filter="line">🎬 명대사</button>
+    <button class="filter-btn" data-filter="scene">🎞️ 명장면</button>
+    <button class="filter-btn" data-filter="fav">⭐ 즐겨찾기</button>
+  </div>
+
+  <div id="quote-list" class="quote-list"></div>
+</main>
+
+<!-- EDIT MODAL -->
+<div id="modal-edit" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>수정</h3>
+      <button id="modal-edit-close" class="icon-btn" aria-label="닫기">✕</button>
+    </div>
+    <form id="form-quote-edit">
+      <textarea id="edit-text" rows="3" required></textarea>
+      <input type="text" id="edit-source" placeholder="출처 (선택)">
+      <select id="edit-category">
+        <option value="quote">💬 명언</option>
+        <option value="line">🎬 명대사</option>
+        <option value="scene">🎞️ 명장면</option>
+      </select>
+      <div class="modal-actions">
+        <button type="button" id="btn-delete-quote" class="btn btn-ghost">삭제</button>
+        <button type="submit" class="btn btn-primary">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EXPORT / IMPORT MODAL -->
+<div id="modal-backup" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>내보내기 / 가져오기</h3>
+      <button id="modal-backup-close" class="icon-btn" aria-label="닫기">✕</button>
+    </div>
+    <p class="hint-text">이 앱은 이 브라우저 안에만 저장돼요. 다른 기기로 옮기거나 백업해두려면 내보내기를 이용하세요.</p>
+    <div class="backup-actions">
+      <button id="btn-do-export" class="btn btn-secondary">📤 JSON으로 내보내기</button>
+      <label class="btn btn-secondary file-label">
+        📥 JSON 파일 가져오기
+        <input type="file" id="import-file" accept="application/json" hidden>
+      </label>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
