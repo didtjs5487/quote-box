@@ -35,6 +35,7 @@
   <form id="form-quote-add" class="quote-add-form">
     <textarea id="quote-text" rows="2" placeholder="마음에 남는 문장을 적어보세요…" required></textarea>
     <input type="text" id="quote-source" placeholder="출처 (선택, 예: 영화 인터스텔라, 괴테)">
+    <input type="text" id="quote-tags" placeholder="태그 (선택, 쉼표로 구분 · 예: 사랑, 위로)">
     <div class="quote-add-row2">
       <select id="quote-category">
         <option value="quote">💬 명언</option>
@@ -57,6 +58,9 @@
     <button class="filter-btn" data-filter="fav">⭐ 즐겨찾기</button>
   </div>
 
+  <!-- TOPIC (TAG) FILTERS -->
+  <div id="tag-filter-row" class="filter-row tag-filter-row hidden"></div>
+
   <div id="quote-list" class="quote-list"></div>
 </main>
 
@@ -70,6 +74,7 @@
     <form id="form-quote-edit">
       <textarea id="edit-text" rows="3" required></textarea>
       <input type="text" id="edit-source" placeholder="출처 (선택)">
+      <input type="text" id="edit-tags" placeholder="태그 (선택, 쉼표로 구분 · 예: 사랑, 위로)">
       <select id="edit-category">
         <option value="quote">💬 명언</option>
         <option value="line">🎬 명대사</option>

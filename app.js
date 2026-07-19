@@ -20,6 +20,7 @@ function uid() {
 const state = {
   items: loadQuotes(),
   filter: 'all',
+  tagFilter: null,
   search: '',
   editingId: null,
   todayId: null,
@@ -29,6 +30,16 @@ const CATEGORY_LABEL = { quote: '💬 명언', line: '🎬 명대사', scene: '�
 
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function parseTags(str) {
+  const seen = new Set();
+  const tags = [];
+  (str || '').split(/[,，]/).forEach(raw => {
+    const tag = raw.trim().replace(/^#+/, '');
+    const key = tag.toLowerCase();
+    if (tag && !seen.has(key)) { seen.add(key); tags.push(tag); }
+  });
+  return tags;
 }
 function toast(msg) {
   const c = document.getElementById('toast-container');
@@ -61,15 +72,22 @@ document.getElementById('btn-shuffle').addEventListener('click', pickToday);
 
 /* ===================== Rendering ===================== */
 function renderQuotes() {
+  renderTagFilters();
   const list = document.getElementById('quote-list');
   list.innerHTML = '';
 
   let items = [...state.items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   if (state.filter === 'fav') items = items.filter(q => q.favorite);
   else if (state.filter !== 'all') items = items.filter(q => q.category === state.filter);
+  if (state.tagFilter) {
+    const t = state.tagFilter.toLowerCase();
+    items = items.filter(q => (q.tags || []).some(tag => tag.toLowerCase() === t));
+  }
   if (state.search.trim()) {
     const q = state.search.trim().toLowerCase();
-    items = items.filter(it => it.text.toLowerCase().includes(q) || (it.source || '').toLowerCase().includes(q));
+    items = items.filter(it => it.text.toLowerCase().includes(q)
+      || (it.source || '').toLowerCase().includes(q)
+      || (it.tags || []).some(tag => tag.toLowerCase().includes(q)));
   }
 
   if (items.length === 0) {
@@ -80,12 +98,14 @@ function renderQuotes() {
   }
 
   items.forEach(q => {
+    const tags = q.tags || [];
     const card = document.createElement('div');
     card.className = 'quote-card';
     card.innerHTML = `
       <span class="quote-tag">${CATEGORY_LABEL[q.category] || CATEGORY_LABEL.quote}</span>
       <p class="quote-text">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
+      ${tags.length ? `<div class="quote-topics">${tags.map(t => `<span class="topic-pill" data-topic="${escapeHtml(t)}">#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
         <div class="quote-actions">
@@ -97,9 +117,45 @@ function renderQuotes() {
       e.stopPropagation();
       toggleFavorite(q.id);
     });
+    card.querySelectorAll('.topic-pill').forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setTagFilter(pill.dataset.topic);
+      });
+    });
     card.addEventListener('click', () => openEditModal(q.id));
     list.appendChild(card);
   });
+}
+
+function renderTagFilters() {
+  const row = document.getElementById('tag-filter-row');
+  const counts = new Map(); // lowercase tag -> { label, count }
+  state.items.forEach(q => (q.tags || []).forEach(tag => {
+    const key = tag.toLowerCase();
+    const entry = counts.get(key) || { label: tag, count: 0 };
+    entry.count += 1;
+    counts.set(key, entry);
+  }));
+
+  if (counts.size === 0) {
+    row.classList.add('hidden');
+    row.innerHTML = '';
+    if (state.tagFilter) { state.tagFilter = null; }
+    return;
+  }
+  row.classList.remove('hidden');
+  const tags = [...counts.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'ko'));
+
+  row.innerHTML = tags.map(t => `<button class="tag-filter-btn${state.tagFilter && state.tagFilter.toLowerCase() === t.label.toLowerCase() ? ' active' : ''}" data-topic="${escapeHtml(t.label)}">#${escapeHtml(t.label)}</button>`).join('');
+  row.querySelectorAll('.tag-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTagFilter(btn.dataset.topic));
+  });
+}
+
+function setTagFilter(tag) {
+  state.tagFilter = (state.tagFilter && state.tagFilter.toLowerCase() === tag.toLowerCase()) ? null : tag;
+  renderQuotes();
 }
 
 function toggleFavorite(id) {
@@ -131,12 +187,14 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   if (!text) return;
   const source = document.getElementById('quote-source').value.trim();
   const category = document.getElementById('quote-category').value;
+  const tags = parseTags(document.getElementById('quote-tags').value);
   state.items.push({
-    id: uid(), text, source, category, favorite: false, createdAt: new Date().toISOString(),
+    id: uid(), text, source, category, tags, favorite: false, createdAt: new Date().toISOString(),
   });
   saveQuotes(state.items);
   textInput.value = '';
   document.getElementById('quote-source').value = '';
+  document.getElementById('quote-tags').value = '';
   renderQuotes();
   pickToday();
   toast('담아뒀어요');
@@ -150,6 +208,7 @@ function openEditModal(id) {
   state.editingId = id;
   document.getElementById('edit-text').value = q.text;
   document.getElementById('edit-source').value = q.source || '';
+  document.getElementById('edit-tags').value = (q.tags || []).join(', ');
   document.getElementById('edit-category').value = q.category;
   editModal.classList.remove('hidden');
 }
@@ -165,6 +224,7 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   if (!text) return;
   q.text = text;
   q.source = document.getElementById('edit-source').value.trim();
+  q.tags = parseTags(document.getElementById('edit-tags').value);
   q.category = document.getElementById('edit-category').value;
   saveQuotes(state.items);
   closeEditModal();
@@ -217,6 +277,7 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             id: it.id || uid(),
             text: it.text,
             source: it.source || '',
+            tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string' && t.trim()) : [],
             category: CATEGORY_LABEL[it.category] ? it.category : 'quote',
             favorite: !!it.favorite,
             createdAt: it.createdAt || new Date().toISOString(),
