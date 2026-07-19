@@ -21,8 +21,23 @@ function uid() {
 }
 
 /* ===================== State ===================== */
+function migrateNotes(items) {
+  let changed = false;
+  items.forEach((q) => {
+    if (!Array.isArray(q.notes)) {
+      q.notes = (typeof q.note === 'string' && q.note.trim())
+        ? [{ id: uid(), text: q.note.trim(), createdAt: q.createdAt || new Date().toISOString() }]
+        : [];
+      changed = true;
+    }
+    if ('note' in q) { delete q.note; changed = true; }
+  });
+  if (changed) saveQuotes(items);
+  return items;
+}
+
 const state = {
-  items: loadQuotes(),
+  items: migrateNotes(loadQuotes()),
   filter: 'all',
   tagFilter: null,
   search: '',
@@ -105,7 +120,7 @@ function renderQuotes() {
     const q = state.search.trim().toLowerCase();
     items = items.filter(it => it.text.toLowerCase().includes(q)
       || (it.source || '').toLowerCase().includes(q)
-      || (it.note || '').toLowerCase().includes(q)
+      || (it.notes || []).some(n => n.text.toLowerCase().includes(q))
       || (it.tags || []).some(tag => tag.toLowerCase().includes(q)));
   }
 
@@ -118,13 +133,15 @@ function renderQuotes() {
 
   items.forEach(q => {
     const tags = q.tags || [];
+    const notes = q.notes || [];
     const card = document.createElement('div');
     card.className = 'quote-card';
     card.innerHTML = `
       <span class="quote-tag">${CATEGORY_LABEL[q.category] || CATEGORY_LABEL.quote}</span>
-      <p class="quote-text" title="눌러서 느낀 점 적기">${escapeHtml(q.text)}</p>
+      <p class="quote-text" title="눌러서 느낀 점 남기기">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
-      <div class="quote-note-slot">${q.note ? `<p class="quote-note" title="눌러서 수정">💭 ${escapeHtml(q.note)}</p>` : ''}</div>
+      <div class="quote-notes">${notes.map(noteItemHTML).join('')}</div>
+      <div class="quote-note-compose-slot"></div>
       ${tags.length ? `<div class="quote-topics">${tags.map(t => `<span class="topic-pill" data-topic="${escapeHtml(t)}">#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
@@ -143,25 +160,49 @@ function renderQuotes() {
         setTagFilter(pill.dataset.topic);
       });
     });
-    const openNote = (e) => { e.stopPropagation(); openInlineNoteEditor(card, q); };
-    card.querySelector('.quote-text').addEventListener('click', openNote);
-    const noteDisplay = card.querySelector('.quote-note');
-    if (noteDisplay) noteDisplay.addEventListener('click', openNote);
+    card.querySelector('.quote-text').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openNoteComposer(card, q);
+    });
+    card.querySelectorAll('.quote-note-item').forEach((itemEl) => {
+      const noteId = itemEl.dataset.noteId;
+      const note = notes.find(n => n.id === noteId);
+      if (!note) return;
+      itemEl.querySelector('.quote-note-text').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openNoteItemEditor(itemEl, q, note);
+      });
+      itemEl.querySelector('.quote-note-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        q.notes = (q.notes || []).filter(n => n.id !== noteId);
+        saveQuotes(state.items);
+        renderQuotes();
+      });
+    });
     card.addEventListener('click', () => openEditModal(q.id));
     list.appendChild(card);
   });
 }
 
-function openInlineNoteEditor(card, q) {
-  const slot = card.querySelector('.quote-note-slot');
-  if (!slot || slot.querySelector('textarea')) return;
+function noteItemHTML(n) {
+  return `
+    <div class="quote-note-item" data-note-id="${n.id}">
+      <p class="quote-note-text" title="눌러서 수정">💭 ${escapeHtml(n.text)}</p>
+      <div class="quote-note-meta">
+        <span class="quote-note-date">${formatDate(n.createdAt)}</span>
+        <button class="quote-note-del" title="삭제">✕</button>
+      </div>
+    </div>
+  `;
+}
 
+function buildNoteEditor({ initialText, placeholder, saveLabel, onSave, onCancel }) {
   const wrap = document.createElement('div');
   wrap.className = 'quote-note-edit';
   const ta = document.createElement('textarea');
   ta.rows = 2;
-  ta.placeholder = '이 문장을 보고 느낀 점, 깨달은 것';
-  ta.value = q.note || '';
+  ta.placeholder = placeholder;
+  ta.value = initialText || '';
   const actions = document.createElement('div');
   actions.className = 'quote-note-edit-actions';
   const cancelBtn = document.createElement('button');
@@ -171,20 +212,54 @@ function openInlineNoteEditor(card, q) {
   const saveBtn = document.createElement('button');
   saveBtn.type = 'button';
   saveBtn.className = 'btn btn-primary btn-small-note';
-  saveBtn.textContent = '저장';
+  saveBtn.textContent = saveLabel;
   actions.append(cancelBtn, saveBtn);
   wrap.append(ta, actions);
   wrap.addEventListener('click', (e) => e.stopPropagation());
-  cancelBtn.addEventListener('click', () => renderQuotes());
-  saveBtn.addEventListener('click', () => {
-    q.note = ta.value.trim();
-    saveQuotes(state.items);
-    renderQuotes();
-    pickToday();
-  });
+  cancelBtn.addEventListener('click', onCancel);
+  saveBtn.addEventListener('click', () => onSave(ta.value.trim()));
+  return { wrap, ta };
+}
 
-  slot.innerHTML = '';
+function openNoteComposer(card, q) {
+  const slot = card.querySelector('.quote-note-compose-slot');
+  if (!slot) return;
+  const existingTa = slot.querySelector('textarea');
+  if (existingTa) { existingTa.focus(); return; }
+  const { wrap, ta } = buildNoteEditor({
+    initialText: '',
+    placeholder: '이 문장을 보고 느낀 점, 깨달은 것을 남겨보세요',
+    saveLabel: '남기기',
+    onCancel: () => renderQuotes(),
+    onSave: (val) => {
+      if (!val) { renderQuotes(); return; }
+      q.notes = q.notes || [];
+      q.notes.push({ id: uid(), text: val, createdAt: new Date().toISOString() });
+      saveQuotes(state.items);
+      renderQuotes();
+      pickToday();
+    },
+  });
   slot.appendChild(wrap);
+  ta.focus();
+}
+
+function openNoteItemEditor(itemEl, q, note) {
+  if (itemEl.querySelector('textarea')) return;
+  const { wrap, ta } = buildNoteEditor({
+    initialText: note.text,
+    placeholder: '느낀 점, 깨달은 것',
+    saveLabel: '저장',
+    onCancel: () => renderQuotes(),
+    onSave: (val) => {
+      if (!val) return;
+      note.text = val;
+      saveQuotes(state.items);
+      renderQuotes();
+    },
+  });
+  itemEl.innerHTML = '';
+  itemEl.appendChild(wrap);
   ta.focus();
 }
 
@@ -246,11 +321,13 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   const text = textInput.value.trim();
   if (!text) return;
   const source = document.getElementById('quote-source').value.trim();
-  const note = document.getElementById('quote-note').value.trim();
+  const noteText = document.getElementById('quote-note').value.trim();
   const category = document.getElementById('quote-category').value;
   const tags = parseTags(document.getElementById('quote-tags').value);
+  const createdAt = new Date().toISOString();
+  const notes = noteText ? [{ id: uid(), text: noteText, createdAt }] : [];
   state.items.push({
-    id: uid(), text, source, note, category, tags, favorite: false, createdAt: new Date().toISOString(),
+    id: uid(), text, source, notes, category, tags, favorite: false, createdAt,
   });
   saveQuotes(state.items);
   textInput.value = '';
@@ -270,7 +347,6 @@ function openEditModal(id) {
   state.editingId = id;
   document.getElementById('edit-text').value = q.text;
   document.getElementById('edit-source').value = q.source || '';
-  document.getElementById('edit-note').value = q.note || '';
   document.getElementById('edit-tags').value = (q.tags || []).join(', ');
   document.getElementById('edit-category').value = q.category;
   editModal.classList.remove('hidden');
@@ -287,7 +363,6 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   if (!text) return;
   q.text = text;
   q.source = document.getElementById('edit-source').value.trim();
-  q.note = document.getElementById('edit-note').value.trim();
   q.tags = parseTags(document.getElementById('edit-tags').value);
   q.category = document.getElementById('edit-category').value;
   saveQuotes(state.items);
@@ -337,15 +412,21 @@ document.getElementById('import-file').addEventListener('change', (e) => {
       const merged = [...state.items];
       imported.forEach(it => {
         if (it && it.text && !existingIds.has(it.id)) {
+          const createdAt = it.createdAt || new Date().toISOString();
+          const notes = Array.isArray(it.notes)
+            ? it.notes.filter(n => n && typeof n.text === 'string' && n.text.trim()).map(n => ({
+                id: n.id || uid(), text: n.text, createdAt: n.createdAt || createdAt,
+              }))
+            : (typeof it.note === 'string' && it.note.trim() ? [{ id: uid(), text: it.note.trim(), createdAt }] : []);
           merged.push({
             id: it.id || uid(),
             text: it.text,
             source: it.source || '',
-            note: typeof it.note === 'string' ? it.note : '',
+            notes,
             tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string' && t.trim()) : [],
             category: CATEGORY_LABEL[it.category] ? it.category : 'quote',
             favorite: !!it.favorite,
-            createdAt: it.createdAt || new Date().toISOString(),
+            createdAt,
           });
         }
       });
