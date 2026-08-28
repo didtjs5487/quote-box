@@ -380,6 +380,42 @@ document.getElementById('btn-delete-quote').addEventListener('click', () => {
   pickToday();
 });
 
+/* ===================== Share ===================== */
+const shareModal = document.getElementById('modal-share');
+function shareUrl() {
+  return location.origin + location.pathname.replace(/index\.html$/, '');
+}
+function buildQrSvg(text) {
+  for (let type = 2; type <= 20; type += 1) {
+    try {
+      const qr = qrcode(type, 'M');
+      qr.addData(text);
+      qr.make();
+      return qr.createSvgTag({ scalable: true });
+    } catch (e) { /* text too long for this type, try a bigger one */ }
+  }
+  return '';
+}
+document.getElementById('btn-share').addEventListener('click', () => {
+  const url = shareUrl();
+  document.getElementById('share-qr').innerHTML = buildQrSvg(url);
+  document.getElementById('share-link-input').value = url;
+  shareModal.classList.remove('hidden');
+});
+document.getElementById('modal-share-close').addEventListener('click', () => shareModal.classList.add('hidden'));
+shareModal.addEventListener('click', (e) => { if (e.target === shareModal) shareModal.classList.add('hidden'); });
+
+document.getElementById('btn-copy-link').addEventListener('click', async () => {
+  const input = document.getElementById('share-link-input');
+  try {
+    await navigator.clipboard.writeText(input.value);
+  } catch (e) {
+    input.select();
+    document.execCommand('copy');
+  }
+  toast('링크를 복사했어요');
+});
+
 /* ===================== Backup: export / import ===================== */
 const backupModal = document.getElementById('modal-backup');
 document.getElementById('btn-export').addEventListener('click', () => backupModal.classList.remove('hidden'));

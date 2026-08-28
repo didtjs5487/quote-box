@@ -37,6 +37,7 @@ button, input, select, textarea { font-family: inherit; }
 }
 .brand { font-family: var(--font-display); font-weight: 600; font-size: 28px; margin: 0 0 2px; }
 .tagline { color: var(--ink-soft); font-size: 13px; margin: 0; }
+.header-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
 .icon-btn {
   background: var(--card); border: 1px solid var(--border); border-radius: 50%;
@@ -163,6 +164,17 @@ button, input, select, textarea { font-family: inherit; }
 .hint-text { color: var(--ink-soft); font-size: 12.5px; line-height: 1.6; margin: 0 0 16px; }
 .backup-actions { display: flex; flex-direction: column; gap: 10px; }
 .file-label { text-align: center; }
+
+.share-qr {
+  display: flex; justify-content: center; background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 18px; margin-bottom: 14px;
+}
+.share-qr svg { width: 220px; height: 220px; max-width: 100%; }
+.share-link-row { display: flex; gap: 8px; }
+.share-link-row input {
+  flex: 1; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
+  padding: 10px 12px; font-size: 13px; color: var(--ink-soft); font-family: var(--font-mono);
+}
 
 /* ===== Toast ===== */
 .toast-container { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 100; pointer-events: none; }

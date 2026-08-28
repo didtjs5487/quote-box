@@ -1,9 +1,10 @@
-const CACHE_NAME = 'quote-box-v1';
+const CACHE_NAME = 'quote-box-v2';
 const APP_SHELL = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './qrcode.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
