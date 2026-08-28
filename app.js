@@ -76,6 +76,9 @@ const CATEGORY_LABEL = { quote: '💬 명언', line: '🎬 명대사', scene: '�
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+function isSafeUrl(str) {
+  return /^https?:\/\//i.test(str || '');
+}
 function parseTags(str) {
   const seen = new Set();
   const tags = [];
@@ -166,6 +169,7 @@ function renderQuotes() {
       <span class="quote-tag">${CATEGORY_LABEL[q.category] || CATEGORY_LABEL.quote}</span>
       <p class="quote-text" title="눌러서 느낀 점 남기기">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
+      ${isSafeUrl(q.link) ? `<a class="quote-link" href="${escapeHtml(q.link)}" target="_blank" rel="noopener noreferrer">🔗 링크 보기</a>` : ''}
       <div class="quote-notes">${notes.map(noteItemHTML).join('')}</div>
       <div class="quote-note-compose-slot"></div>
       ${tags.length ? `<div class="quote-topics">${tags.map(t => `<span class="topic-pill" data-topic="${escapeHtml(t)}">#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
@@ -185,6 +189,8 @@ function renderQuotes() {
       e.stopPropagation();
       toggleFavorite(q.id);
     });
+    const linkEl = card.querySelector('.quote-link');
+    if (linkEl) linkEl.addEventListener('click', (e) => e.stopPropagation());
     card.querySelectorAll('.topic-pill').forEach(pill => {
       pill.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -352,17 +358,19 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   const text = textInput.value.trim();
   if (!text) return;
   const source = document.getElementById('quote-source').value.trim();
+  const link = document.getElementById('quote-link').value.trim();
   const noteText = document.getElementById('quote-note').value.trim();
   const category = document.getElementById('quote-category').value;
   const tags = parseTags(document.getElementById('quote-tags').value);
   const createdAt = new Date().toISOString();
   const notes = noteText ? [{ id: uid(), text: noteText, createdAt }] : [];
   state.items.push({
-    id: uid(), text, source, notes, category, tags, favorite: false, createdAt,
+    id: uid(), text, source, link, notes, category, tags, favorite: false, createdAt,
   });
   saveQuotes(state.items);
   textInput.value = '';
   document.getElementById('quote-source').value = '';
+  document.getElementById('quote-link').value = '';
   document.getElementById('quote-note').value = '';
   document.getElementById('quote-tags').value = '';
   renderQuotes();
@@ -378,6 +386,7 @@ function openEditModal(id) {
   state.editingId = id;
   document.getElementById('edit-text').value = q.text;
   document.getElementById('edit-source').value = q.source || '';
+  document.getElementById('edit-link').value = q.link || '';
   document.getElementById('edit-tags').value = (q.tags || []).join(', ');
   document.getElementById('edit-category').value = q.category;
   editModal.classList.remove('hidden');
@@ -394,6 +403,7 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   if (!text) return;
   q.text = text;
   q.source = document.getElementById('edit-source').value.trim();
+  q.link = document.getElementById('edit-link').value.trim();
   q.tags = parseTags(document.getElementById('edit-tags').value);
   q.category = document.getElementById('edit-category').value;
   saveQuotes(state.items);
@@ -489,6 +499,7 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             id: it.id || uid(),
             text: it.text,
             source: it.source || '',
+            link: typeof it.link === 'string' ? it.link : '',
             notes,
             tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string' && t.trim()) : [],
             category: CATEGORY_LABEL[it.category] ? it.category : 'quote',

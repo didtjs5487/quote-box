@@ -64,7 +64,7 @@ button, input, select, textarea { font-family: inherit; }
 
 /* ===== Add form ===== */
 .quote-add-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.quote-add-form textarea, .quote-add-form input[type="text"] {
+.quote-add-form textarea, .quote-add-form input[type="text"], .quote-add-form input[type="url"] {
   border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
   padding: 12px 14px; font-size: 16px; line-height: 1.5; resize: vertical; color: var(--ink);
 }
@@ -117,6 +117,8 @@ button, input, select, textarea { font-family: inherit; }
 }
 .quote-text { font-family: var(--font-display); font-size: 17px; line-height: 1.55; margin: 0 0 8px; white-space: pre-wrap; }
 .quote-source { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 10px; }
+.quote-link { display: inline-block; font-size: 12.5px; color: var(--accent); margin: 0 0 10px; text-decoration: none; }
+.quote-link:active { opacity: 0.7; }
 .quote-notes { display: flex; flex-direction: column; gap: 6px; }
 .quote-notes:not(:empty) { margin: 0 0 8px; }
 .quote-note-item {
