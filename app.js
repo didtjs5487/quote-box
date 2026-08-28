@@ -45,7 +45,7 @@ const state = {
   todayId: null,
 };
 
-const CATEGORY_LABEL = { quote: '💬 명언', line: '🎬 명대사', scene: '🎞️ 명장면' };
+const CATEGORY_LABEL = { quote: '💬 명언', line: '🎬 명대사', scene: '🎞️ 명장면', toast: '🥂 건배사', joke: '😂 개그' };
 
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -126,7 +126,7 @@ function renderQuotes() {
 
   if (items.length === 0) {
     list.innerHTML = `<p class="empty-state">${state.items.length === 0
-      ? '아직 담아둔 문장이 없어요.<br>마음에 남는 명언·명대사·명장면을 적어보세요 💬'
+      ? '아직 담아둔 문장이 없어요.<br>마음에 남는 명언·명대사·명장면·건배사·개그를 적어보세요 💬'
       : '조건에 맞는 문장이 없어요.'}</p>`;
     return;
   }
