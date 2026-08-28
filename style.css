@@ -33,7 +33,7 @@ button, input, select, textarea { font-family: inherit; }
 /* ===== Header ===== */
 .app-header {
   display: flex; align-items: flex-start; justify-content: space-between;
-  padding: 22px 18px 8px; max-width: 640px; margin: 0 auto;
+  padding: calc(22px + env(safe-area-inset-top)) 18px 8px; max-width: 640px; margin: 0 auto;
 }
 .brand { font-family: var(--font-display); font-weight: 600; font-size: 28px; margin: 0 0 2px; }
 .tagline { color: var(--ink-soft); font-size: 13px; margin: 0; }
