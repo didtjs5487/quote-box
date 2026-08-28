@@ -21,6 +21,32 @@ function uid() {
 }
 
 /* ===================== State ===================== */
+const SEED_FLAG_KEY = 'quoteBoxSeeded';
+function seedIfNeeded(items) {
+  if (items.length > 0) {
+    if (!localStorage.getItem(SEED_FLAG_KEY)) localStorage.setItem(SEED_FLAG_KEY, '1');
+    return items;
+  }
+  if (localStorage.getItem(SEED_FLAG_KEY)) return items;
+  localStorage.setItem(SEED_FLAG_KEY, '1');
+  const now = new Date().toISOString();
+  const seed = {
+    id: uid(),
+    text: '읽는 것\n듣는 것\n보는 것\n이것은 인생의 살\n\n왜 읽는가\n왜 듣는가\n왜 보는가\n이것은 인생의 뼈\n\n뼈가 있어야\n살이 붙는다',
+    source: '카피라이터 정철',
+    category: 'quote',
+    tags: ['인생의 뼈'],
+    favorite: false,
+    notes: [
+      { id: uid(), text: '개발자가 남기는 첫 선물이에요 🎁 마음에 드시면 그대로 두고, 아니면 지우고 나만의 문장으로 채워보세요.', createdAt: now },
+    ],
+    createdAt: now,
+  };
+  const seeded = [seed];
+  saveQuotes(seeded);
+  return seeded;
+}
+
 function migrateNotes(items) {
   let changed = false;
   items.forEach((q) => {
@@ -37,7 +63,7 @@ function migrateNotes(items) {
 }
 
 const state = {
-  items: migrateNotes(loadQuotes()),
+  items: migrateNotes(seedIfNeeded(loadQuotes())),
   filter: 'all',
   tagFilter: null,
   search: '',
