@@ -146,10 +146,15 @@ function renderQuotes() {
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
         <div class="quote-actions">
+          <button class="quote-edit-btn" title="문장 수정">✎</button>
           <button class="quote-fav-btn" title="즐겨찾기">${q.favorite ? '⭐' : '☆'}</button>
         </div>
       </div>
     `;
+    card.querySelector('.quote-edit-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditModal(q.id);
+    });
     card.querySelector('.quote-fav-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       toggleFavorite(q.id);
