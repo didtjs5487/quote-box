@@ -65,12 +65,12 @@ button, input, select, textarea { font-family: inherit; }
 .quote-add-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .quote-add-form textarea, .quote-add-form input[type="text"] {
   border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
-  padding: 12px 14px; font-size: 15px; line-height: 1.5; resize: vertical; color: var(--ink);
+  padding: 12px 14px; font-size: 16px; line-height: 1.5; resize: vertical; color: var(--ink);
 }
 .quote-add-row2 { display: flex; gap: 8px; }
 .quote-add-row2 select {
   border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
-  padding: 0 10px; font-size: 14px; color: var(--ink);
+  padding: 0 10px; font-size: 16px; color: var(--ink);
 }
 .quote-add-row2 .btn { flex: 1; }
 
@@ -86,7 +86,7 @@ button, input, select, textarea { font-family: inherit; }
 /* ===== Search & filters ===== */
 .search-input {
   width: 100%; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
-  padding: 10px 14px; font-size: 14px; margin-bottom: 10px; color: var(--ink);
+  padding: 10px 14px; font-size: 16px; margin-bottom: 10px; color: var(--ink);
 }
 .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .filter-btn {
@@ -130,7 +130,7 @@ button, input, select, textarea { font-family: inherit; }
 .quote-note-compose-slot:not(:empty) { margin: 0 0 10px; }
 .quote-note-edit textarea {
   width: 100%; border: 1px solid var(--border); background: var(--paper); border-radius: 8px;
-  padding: 8px 10px; font-size: 13.5px; line-height: 1.6; color: var(--ink); resize: vertical;
+  padding: 8px 10px; font-size: 16px; line-height: 1.6; color: var(--ink); resize: vertical;
 }
 .quote-note-edit-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
 .btn-small-note { padding: 6px 12px; font-size: 12.5px; }
@@ -157,7 +157,7 @@ button, input, select, textarea { font-family: inherit; }
 #form-quote-edit { display: flex; flex-direction: column; gap: 10px; }
 #form-quote-edit textarea, #form-quote-edit input, #form-quote-edit select {
   border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
-  padding: 11px 13px; font-size: 15px; color: var(--ink);
+  padding: 11px 13px; font-size: 16px; color: var(--ink);
 }
 .modal-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .hint-text { color: var(--ink-soft); font-size: 12.5px; line-height: 1.6; margin: 0 0 16px; }
