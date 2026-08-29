@@ -130,9 +130,19 @@
 
     <div class="capture-block">
       <p class="block-title">🔖 다른 사이트에서 바로 담기</p>
-      <p class="hint-text">이 버튼을 북마크바로 드래그해두세요. 다른 페이지에서 문장을 드래그해 선택한 뒤 이 버튼을 누르면, 선택한 문장·페이지 제목·주소가 채워진 채로 담기 화면이 열려요.</p>
+      <p class="hint-text">PC라면 이 버튼을 북마크바(즐겨찾기 모음줄)로 드래그해두세요. 다른 페이지에서 문장을 드래그해 선택한 뒤 눌러보세요.</p>
       <a id="bookmarklet-link" class="btn btn-secondary" href="#" onclick="return false;">📌 문장갈피에 담기</a>
-      <p class="hint-text">(모바일은 드래그가 안 되면, 즐겨찾기에 아무거나 추가한 뒤 주소를 이 버튼 주소로 바꿔 넣어 쓰세요. 안드로이드는 문장 선택 후 "공유하기"로 이 앱을 골라도 바로 담겨요.)</p>
+      <p class="hint-text">안드로이드에 앱을 설치했다면, 문장 선택 후 "공유하기" → "문장갈피"를 골라도 똑같이 바로 담겨요.</p>
+
+      <details class="capture-fallback">
+        <summary>드래그가 잘 안 돼요 (쉬운 방법 보기)</summary>
+        <ol class="fallback-steps">
+          <li>브라우저에서 아무 페이지나 <strong>북마크(즐겨찾기)에 추가</strong>하세요 (이름은 아무거나 좋아요).</li>
+          <li>아래 <strong>"주소 복사하기"</strong> 버튼을 누르세요.</li>
+          <li>방금 만든 북마크를 <strong>편집(수정)</strong>해서, 주소(URL) 칸을 지우고 복사한 걸 붙여넣은 뒤 저장하세요.</li>
+        </ol>
+        <button type="button" id="btn-copy-bookmarklet" class="btn btn-secondary">📋 주소 복사하기</button>
+      </details>
     </div>
   </div>
 </div>

@@ -184,7 +184,11 @@ button, input, select, textarea { font-family: inherit; }
 .capture-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 .block-title { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin: 0 0 8px; }
 .capture-block .btn { display: block; text-align: center; text-decoration: none; margin-bottom: 10px; cursor: grab; }
-.capture-block .hint-text:last-child { margin-bottom: 0; }
+.capture-fallback { margin-top: 4px; }
+.capture-fallback summary { font-size: 12.5px; color: var(--accent); cursor: pointer; font-weight: 600; }
+.fallback-steps { margin: 10px 0; padding-left: 20px; color: var(--ink-soft); font-size: 12.5px; line-height: 1.8; }
+.fallback-steps strong { color: var(--ink); }
+.capture-fallback .btn { cursor: pointer; margin-bottom: 0; }
 
 .share-qr {
   display: flex; justify-content: center; background: #fff; border: 1px solid var(--border);

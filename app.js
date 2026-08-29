@@ -540,14 +540,34 @@ function appBaseUrl() {
   toast('가져온 내용을 채워뒀어요. 확인하고 담아두기를 눌러주세요');
 })();
 
-(function setupBookmarklet() {
-  const link = document.getElementById('bookmarklet-link');
-  if (!link) return;
-  const code = "(function(){var t=(window.getSelection?window.getSelection().toString():'').trim();"
+function bookmarkletCode() {
+  return "(function(){var t=(window.getSelection?window.getSelection().toString():'').trim();"
     + "var u=encodeURIComponent(location.href);var ti=encodeURIComponent(document.title);"
     + "var tx=encodeURIComponent(t);window.open('" + appBaseUrl() + "?share_text='+tx+'&share_title='+ti+'&share_url='+u,'_blank');})();";
-  link.href = 'javascript:' + code;
+}
+(function setupBookmarklet() {
+  const link = document.getElementById('bookmarklet-link');
+  if (link) link.href = 'javascript:' + bookmarkletCode();
 })();
+const btnCopyBookmarklet = document.getElementById('btn-copy-bookmarklet');
+if (btnCopyBookmarklet) {
+  btnCopyBookmarklet.addEventListener('click', async () => {
+    const text = 'javascript:' + bookmarkletCode();
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    toast('주소를 복사했어요. 북마크 편집 화면에 붙여넣어주세요');
+  });
+}
 
 /* ===================== Init ===================== */
 renderQuotes();
