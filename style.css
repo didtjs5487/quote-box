@@ -56,21 +56,23 @@ button, input, select, textarea { font-family: inherit; }
   box-shadow: var(--shadow);
 }
 .today-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; color: #C9A98F; margin: 0 0 10px; text-transform: uppercase; }
-.today-text { font-family: var(--font-display); font-size: 20px; line-height: 1.5; margin: 0 0 8px; white-space: pre-wrap; cursor: pointer; }
-.today-text.clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.today-more { font-family: var(--font-mono); font-size: 11px; color: #C9A98F; background: none; border: none; padding: 0; margin: -4px 0 8px; cursor: pointer; text-decoration: underline; }
+.today-text { font-family: var(--font-display); font-size: 20px; line-height: 1.5; margin: 0 0 8px; white-space: pre-wrap; }
 .today-source { font-size: 12.5px; color: #C9A98F; margin: 0; }
 .today-card .icon-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.12); border-color: transparent; color: var(--paper); }
 
 /* ===== Add form ===== */
-.quote-add-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.quote-add-form {
+  display: flex; flex-direction: column; gap: 8px; margin: 10px 0 22px;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px; box-shadow: var(--shadow);
+}
 .quote-add-form textarea, .quote-add-form input[type="text"], .quote-add-form input[type="url"] {
-  border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
+  border: 1px solid var(--border); background: var(--paper); border-radius: var(--radius-md);
   padding: 12px 14px; font-size: 16px; line-height: 1.5; resize: vertical; color: var(--ink);
 }
 .quote-add-row2 { display: flex; gap: 8px; }
 .quote-add-row2 select {
-  border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
+  border: 1px solid var(--border); background: var(--paper); border-radius: var(--radius-md);
   padding: 0 10px; font-size: 16px; color: var(--ink);
 }
 .quote-add-row2 .btn { flex: 1; }
