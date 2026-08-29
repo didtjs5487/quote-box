@@ -162,7 +162,7 @@ function renderQuotes() {
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
         <div class="quote-actions">
-          <button class="quote-edit-btn" title="문장 수정">✎</button>
+          <button class="quote-edit-btn" title="문장 수정">✎ 수정</button>
           <button class="quote-fav-btn" title="즐겨찾기">${q.favorite ? '⭐' : '☆'}</button>
         </div>
       </div>
@@ -506,6 +506,16 @@ document.getElementById('import-file').addEventListener('change', (e) => {
     e.target.value = '';
   };
   reader.readAsText(file);
+});
+
+/* ===================== First-run hint ===================== */
+const HINT_FLAG_KEY = 'quoteBoxHintDismissed';
+if (state.items.length > 0 && !localStorage.getItem(HINT_FLAG_KEY)) {
+  document.getElementById('hint-banner').classList.remove('hidden');
+}
+document.getElementById('hint-banner-close').addEventListener('click', () => {
+  localStorage.setItem(HINT_FLAG_KEY, '1');
+  document.getElementById('hint-banner').classList.add('hidden');
 });
 
 /* ===================== Init ===================== */
