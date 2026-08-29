@@ -181,6 +181,11 @@ button, input, select, textarea { font-family: inherit; }
 .backup-actions { display: flex; flex-direction: column; gap: 10px; }
 .file-label { text-align: center; }
 
+.capture-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.block-title { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin: 0 0 8px; }
+.capture-block .btn { display: block; text-align: center; text-decoration: none; margin-bottom: 10px; cursor: grab; }
+.capture-block .hint-text:last-child { margin-bottom: 0; }
+
 .share-qr {
   display: flex; justify-content: center; background: #fff; border: 1px solid var(--border);
   border-radius: var(--radius-md); padding: 18px; margin-bottom: 14px;

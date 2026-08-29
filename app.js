@@ -518,6 +518,37 @@ document.getElementById('hint-banner-close').addEventListener('click', () => {
   document.getElementById('hint-banner').classList.add('hidden');
 });
 
+/* ===================== Quick capture (share target / bookmarklet) ===================== */
+function appBaseUrl() {
+  return location.origin + location.pathname.replace(/index\.html$/, '');
+}
+
+(function handleIncomingShare() {
+  const params = new URLSearchParams(location.search);
+  const sharedText = (params.get('share_text') || '').trim();
+  const sharedTitle = (params.get('share_title') || '').trim();
+  const sharedUrl = (params.get('share_url') || '').trim();
+  if (!sharedText && !sharedTitle && !sharedUrl) return;
+
+  document.getElementById('quote-text').value = sharedText || sharedTitle;
+  if (sharedTitle && sharedText) document.getElementById('quote-source').value = sharedTitle;
+  if (sharedUrl) document.getElementById('quote-link').value = sharedUrl;
+
+  history.replaceState(null, '', location.pathname);
+  document.getElementById('form-quote-add').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('quote-text').focus();
+  toast('가져온 내용을 채워뒀어요. 확인하고 담아두기를 눌러주세요');
+})();
+
+(function setupBookmarklet() {
+  const link = document.getElementById('bookmarklet-link');
+  if (!link) return;
+  const code = "(function(){var t=(window.getSelection?window.getSelection().toString():'').trim();"
+    + "var u=encodeURIComponent(location.href);var ti=encodeURIComponent(document.title);"
+    + "var tx=encodeURIComponent(t);window.open('" + appBaseUrl() + "?share_text='+tx+'&share_title='+ti+'&share_url='+u,'_blank');})();";
+  link.href = 'javascript:' + code;
+})();
+
 /* ===================== Init ===================== */
 renderQuotes();
 pickToday();
