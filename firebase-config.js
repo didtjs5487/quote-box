@@ -12,12 +12,13 @@
 // ─────────────────────────────────────────────────────────────
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCk0wonsLgcgPV-Z3ivnPOmy3ZMxsqKers",
+  authDomain: "didtjs5487-quote-box.firebaseapp.com",
+  projectId: "didtjs5487-quote-box",
+  storageBucket: "didtjs5487-quote-box.firebasestorage.app",
+  messagingSenderId: "793871789271",
+  appId: "1:793871789271:web:6e8993220c16ca65325492",
+  measurementId: "G-TKZ08WDCJN"
 };
 
 window.__FIREBASE_CONFIG__ = firebaseConfig;
