@@ -22,7 +22,7 @@
 <header class="app-header">
   <div>
     <h1 class="brand">문장갈피</h1>
-    <p class="tagline">마음에 남는 명언·명대사·명장면·건배사·개그를 모아두는 곳</p>
+    <p class="tagline">마음에 남는 문장을 태그로 모아두는 곳</p>
   </div>
   <div class="header-actions">
     <button id="btn-share" class="icon-btn" title="공유하기" aria-label="공유하기">🔗</button>
@@ -47,16 +47,7 @@
     <input type="url" id="quote-link" placeholder="링크 (선택, 예: https://youtu.be/...)">
     <textarea id="quote-note" rows="2" placeholder="이 문장을 보고 느낀 점, 깨달은 것 (선택)"></textarea>
     <input type="text" id="quote-tags" placeholder="태그 (선택, 쉼표로 구분 · 예: 사랑, 위로, 말씀)">
-    <div class="quote-add-row2">
-      <select id="quote-category">
-        <option value="quote">💬 명언</option>
-        <option value="line">🎬 명대사</option>
-        <option value="scene">🎞️ 명장면</option>
-        <option value="toast">🥂 건배사</option>
-        <option value="joke">😂 개그</option>
-      </select>
-      <button type="submit" class="btn btn-primary">담아두기</button>
-    </div>
+    <button type="submit" class="btn btn-primary">담아두기</button>
   </form>
 
   <!-- SEARCH -->
@@ -65,11 +56,6 @@
   <!-- FILTERS -->
   <div class="filter-row">
     <button class="filter-btn active" data-filter="all">전체</button>
-    <button class="filter-btn" data-filter="quote">💬 명언</button>
-    <button class="filter-btn" data-filter="line">🎬 명대사</button>
-    <button class="filter-btn" data-filter="scene">🎞️ 명장면</button>
-    <button class="filter-btn" data-filter="toast">🥂 건배사</button>
-    <button class="filter-btn" data-filter="joke">😂 개그</button>
     <button class="filter-btn" data-filter="fav">⭐ 즐겨찾기</button>
   </div>
 
@@ -97,13 +83,6 @@
       <input type="text" id="edit-source" placeholder="출처 (선택)">
       <input type="url" id="edit-link" placeholder="링크 (선택, 예: https://youtu.be/...)">
       <input type="text" id="edit-tags" placeholder="태그 (선택, 쉼표로 구분 · 예: 사랑, 위로, 말씀)">
-      <select id="edit-category">
-        <option value="quote">💬 명언</option>
-        <option value="line">🎬 명대사</option>
-        <option value="scene">🎞️ 명장면</option>
-        <option value="toast">🥂 건배사</option>
-        <option value="joke">😂 개그</option>
-      </select>
       <div class="modal-actions">
         <button type="button" id="btn-delete-quote" class="btn btn-ghost">삭제</button>
         <button type="submit" class="btn btn-primary">저장</button>

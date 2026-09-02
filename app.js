@@ -34,7 +34,6 @@ function seedIfNeeded(items) {
     id: uid(),
     text: '읽는 것\n듣는 것\n보는 것\n이것은 인생의 살\n\n왜 읽는가\n왜 듣는가\n왜 보는가\n이것은 인생의 뼈\n\n뼈가 있어야\n살이 붙는다',
     source: '카피라이터 정철',
-    category: 'quote',
     tags: ['인생의 뼈'],
     favorite: false,
     notes: [
@@ -62,16 +61,32 @@ function migrateNotes(items) {
   return items;
 }
 
+const CATEGORY_TAG_LABEL = { quote: '명언', line: '명대사', scene: '명장면', toast: '건배사', joke: '개그' };
+function migrateCategoryToTags(items) {
+  let changed = false;
+  items.forEach((q) => {
+    if ('category' in q) {
+      const tagName = CATEGORY_TAG_LABEL[q.category];
+      if (tagName) {
+        q.tags = q.tags || [];
+        if (!q.tags.some(t => t.toLowerCase() === tagName.toLowerCase())) q.tags.push(tagName);
+      }
+      delete q.category;
+      changed = true;
+    }
+  });
+  if (changed) saveQuotes(items);
+  return items;
+}
+
 const state = {
-  items: migrateNotes(seedIfNeeded(loadQuotes())),
+  items: migrateNotes(migrateCategoryToTags(seedIfNeeded(loadQuotes()))),
   filter: 'all',
   tagFilter: null,
   search: '',
   editingId: null,
   todayId: null,
 };
-
-const CATEGORY_LABEL = { quote: '💬 명언', line: '🎬 명대사', scene: '🎞️ 명장면', toast: '🥂 건배사', joke: '😂 개그' };
 
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -126,7 +141,6 @@ function renderQuotes() {
 
   let items = [...state.items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   if (state.filter === 'fav') items = items.filter(q => q.favorite);
-  else if (state.filter !== 'all') items = items.filter(q => q.category === state.filter);
   if (state.tagFilter) {
     const t = state.tagFilter.toLowerCase();
     items = items.filter(q => (q.tags || []).some(tag => tag.toLowerCase() === t));
@@ -141,7 +155,7 @@ function renderQuotes() {
 
   if (items.length === 0) {
     list.innerHTML = `<p class="empty-state">${state.items.length === 0
-      ? '아직 담아둔 문장이 없어요.<br>마음에 남는 명언·명대사·명장면·건배사·개그를 적어보세요 💬'
+      ? '아직 담아둔 문장이 없어요.<br>마음에 남는 문장을 적어보세요 💬'
       : '조건에 맞는 문장이 없어요.'}</p>`;
     return;
   }
@@ -152,7 +166,6 @@ function renderQuotes() {
     const card = document.createElement('div');
     card.className = 'quote-card';
     card.innerHTML = `
-      <span class="quote-tag">${CATEGORY_LABEL[q.category] || CATEGORY_LABEL.quote}</span>
       <p class="quote-text" title="눌러서 느낀 점 남기기">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
       ${isSafeUrl(q.link) ? `<a class="quote-link" href="${escapeHtml(q.link)}" target="_blank" rel="noopener noreferrer">🔗 링크 보기</a>` : ''}
@@ -303,7 +316,7 @@ function renderTagFilters() {
     return;
   }
   row.classList.remove('hidden');
-  const tags = [...counts.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'ko'));
+  const tags = [...counts.values()].sort((a, b) => a.label.localeCompare(b.label, 'ko'));
 
   row.innerHTML = tags.map(t => `<button class="tag-filter-btn${state.tagFilter && state.tagFilter.toLowerCase() === t.label.toLowerCase() ? ' active' : ''}" data-topic="${escapeHtml(t.label)}">#${escapeHtml(t.label)}</button>`).join('');
   row.querySelectorAll('.tag-filter-btn').forEach(btn => {
@@ -346,12 +359,11 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   const source = document.getElementById('quote-source').value.trim();
   const link = document.getElementById('quote-link').value.trim();
   const noteText = document.getElementById('quote-note').value.trim();
-  const category = document.getElementById('quote-category').value;
   const tags = parseTags(document.getElementById('quote-tags').value);
   const createdAt = new Date().toISOString();
   const notes = noteText ? [{ id: uid(), text: noteText, createdAt }] : [];
   state.items.push({
-    id: uid(), text, source, link, notes, category, tags, favorite: false, createdAt,
+    id: uid(), text, source, link, notes, tags, favorite: false, createdAt,
   });
   saveQuotes(state.items);
   textInput.value = '';
@@ -374,7 +386,6 @@ function openEditModal(id) {
   document.getElementById('edit-source').value = q.source || '';
   document.getElementById('edit-link').value = q.link || '';
   document.getElementById('edit-tags').value = (q.tags || []).join(', ');
-  document.getElementById('edit-category').value = q.category;
   editModal.classList.remove('hidden');
 }
 function closeEditModal() { editModal.classList.add('hidden'); state.editingId = null; }
@@ -391,7 +402,6 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   q.source = document.getElementById('edit-source').value.trim();
   q.link = document.getElementById('edit-link').value.trim();
   q.tags = parseTags(document.getElementById('edit-tags').value);
-  q.category = document.getElementById('edit-category').value;
   saveQuotes(state.items);
   closeEditModal();
   renderQuotes();
@@ -481,14 +491,18 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 id: n.id || uid(), text: n.text, createdAt: n.createdAt || createdAt,
               }))
             : (typeof it.note === 'string' && it.note.trim() ? [{ id: uid(), text: it.note.trim(), createdAt }] : []);
+          const tags = Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string' && t.trim()) : [];
+          const legacyCategoryTag = CATEGORY_TAG_LABEL[it.category];
+          if (legacyCategoryTag && !tags.some(t => t.toLowerCase() === legacyCategoryTag.toLowerCase())) {
+            tags.push(legacyCategoryTag);
+          }
           merged.push({
             id: it.id || uid(),
             text: it.text,
             source: it.source || '',
             link: typeof it.link === 'string' ? it.link : '',
             notes,
-            tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string' && t.trim()) : [],
-            category: CATEGORY_LABEL[it.category] ? it.category : 'quote',
+            tags,
             favorite: !!it.favorite,
             createdAt,
           });

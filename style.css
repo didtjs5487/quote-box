@@ -70,12 +70,7 @@ button, input, select, textarea { font-family: inherit; }
   border: 1px solid var(--border); background: var(--paper); border-radius: var(--radius-md);
   padding: 12px 14px; font-size: 16px; line-height: 1.5; resize: vertical; color: var(--ink);
 }
-.quote-add-row2 { display: flex; gap: 8px; }
-.quote-add-row2 select {
-  border: 1px solid var(--border); background: var(--paper); border-radius: var(--radius-md);
-  padding: 0 10px; font-size: 16px; color: var(--ink);
-}
-.quote-add-row2 .btn { flex: 1; }
+.quote-add-form > .btn { width: 100%; }
 
 .btn {
   border: none; border-radius: var(--radius-sm); padding: 11px 16px;
@@ -119,10 +114,6 @@ button, input, select, textarea { font-family: inherit; }
 .quote-card {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: 16px 18px; box-shadow: var(--shadow); cursor: pointer;
-}
-.quote-tag {
-  display: inline-block; font-size: 11px; font-weight: 700; color: var(--ink-soft);
-  background: var(--paper); border-radius: 10px; padding: 2px 9px; margin-bottom: 8px;
 }
 .quote-text { font-family: var(--font-display); font-size: 17px; line-height: 1.55; margin: 0 0 8px; white-space: pre-wrap; }
 .quote-source { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 10px; }
