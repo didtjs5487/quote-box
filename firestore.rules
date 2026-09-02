@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // This app has no login screen. Access to a backup is gated entirely
+    // by knowing its password (the client hashes the password into the
+    // document id before reading/writing — see hashKey() in app.js), so
+    // these collections are intentionally open to anyone who already has
+    // that hash. The hint lookup is keyed by a non-secret nickname and is
+    // meant to be readable without the password.
+    match /backups/{key} {
+      allow read, write: if true;
+    }
+    match /backupHints/{nickname} {
+      allow read, write: if true;
+    }
+  }
+}

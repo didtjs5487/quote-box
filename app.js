@@ -212,6 +212,7 @@ function renderQuotes() {
         e.stopPropagation();
         q.notes = (q.notes || []).filter(n => n.id !== noteId);
         saveQuotes(state.items);
+        syncCloudBackup();
         renderQuotes();
       });
     });
@@ -272,6 +273,7 @@ function openNoteComposer(card, q) {
       q.notes = q.notes || [];
       q.notes.push({ id: uid(), text: val, createdAt: new Date().toISOString() });
       saveQuotes(state.items);
+      syncCloudBackup();
       renderQuotes();
       pickToday();
     },
@@ -291,6 +293,7 @@ function openNoteItemEditor(itemEl, q, note) {
       if (!val) return;
       note.text = val;
       saveQuotes(state.items);
+      syncCloudBackup();
       renderQuotes();
     },
   });
@@ -334,6 +337,7 @@ function toggleFavorite(id) {
   if (!q) return;
   q.favorite = !q.favorite;
   saveQuotes(state.items);
+  syncCloudBackup();
   renderQuotes();
 }
 
@@ -366,6 +370,7 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
     id: uid(), text, source, link, notes, tags, favorite: false, createdAt,
   });
   saveQuotes(state.items);
+  syncCloudBackup();
   textInput.value = '';
   document.getElementById('quote-source').value = '';
   document.getElementById('quote-link').value = '';
@@ -403,6 +408,7 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   q.link = document.getElementById('edit-link').value.trim();
   q.tags = parseTags(document.getElementById('edit-tags').value);
   saveQuotes(state.items);
+  syncCloudBackup();
   closeEditModal();
   renderQuotes();
   pickToday();
@@ -412,6 +418,7 @@ document.getElementById('btn-delete-quote').addEventListener('click', () => {
   if (!confirm('이 문장을 삭제할까요?')) return;
   state.items = state.items.filter(it => it.id !== state.editingId);
   saveQuotes(state.items);
+  syncCloudBackup();
   closeEditModal();
   renderQuotes();
   pickToday();
@@ -451,6 +458,148 @@ document.getElementById('btn-copy-link').addEventListener('click', async () => {
     document.execCommand('copy');
   }
   toast('링크를 복사했어요');
+});
+
+/* ===================== Cloud backup (optional, no login) ===================== */
+let cloudDb = null;
+if (window.__FIREBASE_CONFIG__ && window.__FIREBASE_CONFIG__.apiKey && window.__FIREBASE_CONFIG__.apiKey !== 'YOUR_API_KEY') {
+  try {
+    firebase.initializeApp(window.__FIREBASE_CONFIG__);
+    cloudDb = firebase.firestore();
+  } catch (e) { cloudDb = null; }
+}
+
+const CLOUD_NICKNAME_KEY = 'quoteBoxCloudNickname';
+const CLOUD_HASH_KEY = 'quoteBoxCloudHash';
+state.cloudNickname = localStorage.getItem(CLOUD_NICKNAME_KEY) || null;
+state.cloudHash = localStorage.getItem(CLOUD_HASH_KEY) || null;
+
+async function hashKey(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function syncCloudBackup() {
+  if (!cloudDb || !state.cloudHash) return;
+  cloudDb.collection('backups').doc(state.cloudHash).set({
+    nickname: state.cloudNickname,
+    items: state.items,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  }).catch(() => { /* offline or blocked — will retry on the next change */ });
+}
+
+function updateCloudBackupUI() {
+  const unavailableEl = document.getElementById('cloud-backup-unavailable');
+  const connectedEl = document.getElementById('cloud-backup-connected');
+  const setupEl = document.getElementById('cloud-backup-setup');
+  if (!cloudDb) {
+    unavailableEl.classList.remove('hidden');
+    connectedEl.classList.add('hidden');
+    setupEl.classList.add('hidden');
+    return;
+  }
+  unavailableEl.classList.add('hidden');
+  if (state.cloudHash) {
+    connectedEl.classList.remove('hidden');
+    setupEl.classList.add('hidden');
+    document.getElementById('cloud-backup-nickname-display').textContent = state.cloudNickname || '';
+  } else {
+    connectedEl.classList.add('hidden');
+    setupEl.classList.remove('hidden');
+  }
+}
+
+document.getElementById('form-cloud-setup').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('cloud-setup-error');
+  errEl.textContent = '';
+  const nickname = document.getElementById('cloud-nickname').value.trim();
+  const password = document.getElementById('cloud-password').value.trim();
+  const hint = document.getElementById('cloud-hint').value.trim();
+  if (!/^\d{4}$/.test(password)) { errEl.textContent = '암호는 숫자 4자리로 입력해주세요'; return; }
+  if (!cloudDb) { errEl.textContent = '백업 기능을 아직 쓸 수 없어요'; return; }
+  try {
+    const hash = await hashKey(password);
+    await cloudDb.collection('backupHints').doc(nickname).set({
+      hint, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await cloudDb.collection('backups').doc(hash).set({
+      nickname, items: state.items, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    state.cloudNickname = nickname;
+    state.cloudHash = hash;
+    localStorage.setItem(CLOUD_NICKNAME_KEY, nickname);
+    localStorage.setItem(CLOUD_HASH_KEY, hash);
+    document.getElementById('form-cloud-setup').reset();
+    updateCloudBackupUI();
+    toast('백업을 시작했어요');
+  } catch (err) {
+    errEl.textContent = '백업 설정에 실패했어요: ' + (err.code || err.message);
+  }
+});
+
+document.getElementById('btn-cloud-disconnect').addEventListener('click', () => {
+  if (!confirm('이 기기의 자동 백업 연결을 해제할까요? (클라우드에 저장된 데이터는 그대로 남아있고, 나중에 같은 암호로 다시 연결할 수 있어요)')) return;
+  state.cloudNickname = null;
+  state.cloudHash = null;
+  localStorage.removeItem(CLOUD_NICKNAME_KEY);
+  localStorage.removeItem(CLOUD_HASH_KEY);
+  updateCloudBackupUI();
+  toast('연결을 해제했어요');
+});
+
+document.getElementById('btn-view-hint').addEventListener('click', async () => {
+  const nickname = document.getElementById('restore-nickname').value.trim();
+  const displayEl = document.getElementById('restore-hint-display');
+  displayEl.textContent = '';
+  if (!nickname || !cloudDb) return;
+  try {
+    const doc = await cloudDb.collection('backupHints').doc(nickname).get();
+    displayEl.textContent = (doc.exists && doc.data().hint)
+      ? '💡 힌트: ' + doc.data().hint
+      : '그 이름으로 된 힌트를 못 찾았어요.';
+  } catch (err) {
+    displayEl.textContent = '힌트를 불러오지 못했어요.';
+  }
+});
+
+document.getElementById('form-cloud-restore').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('cloud-restore-error');
+  errEl.textContent = '';
+  const nickname = document.getElementById('restore-nickname').value.trim();
+  const password = document.getElementById('restore-password').value.trim();
+  if (!/^\d{4}$/.test(password)) { errEl.textContent = '암호는 숫자 4자리로 입력해주세요'; return; }
+  if (!cloudDb) { errEl.textContent = '백업 기능을 아직 쓸 수 없어요'; return; }
+  try {
+    const hash = await hashKey(password);
+    const doc = await cloudDb.collection('backups').doc(hash).get();
+    if (!doc.exists) { errEl.textContent = '그 암호로 된 백업을 찾지 못했어요'; return; }
+    const data = doc.data();
+    const remoteItems = Array.isArray(data.items) ? data.items : [];
+    const existingIds = new Set(state.items.map(it => it.id));
+    let addedCount = 0;
+    remoteItems.forEach((it) => {
+      if (it && it.id && !existingIds.has(it.id)) {
+        state.items.push(it);
+        addedCount += 1;
+      }
+    });
+    saveQuotes(state.items);
+    state.cloudNickname = data.nickname || nickname;
+    state.cloudHash = hash;
+    localStorage.setItem(CLOUD_NICKNAME_KEY, state.cloudNickname);
+    localStorage.setItem(CLOUD_HASH_KEY, hash);
+    renderQuotes();
+    pickToday();
+    updateCloudBackupUI();
+    document.getElementById('form-cloud-restore').reset();
+    document.getElementById('restore-hint-display').textContent = '';
+    toast(`${addedCount}개 문장을 복구했어요`);
+  } catch (err) {
+    errEl.textContent = '복구에 실패했어요: ' + (err.code || err.message);
+  }
 });
 
 /* ===================== Backup: export / import ===================== */
@@ -510,6 +659,7 @@ document.getElementById('import-file').addEventListener('change', (e) => {
       });
       state.items = merged;
       saveQuotes(state.items);
+      syncCloudBackup();
       renderQuotes();
       pickToday();
       backupModal.classList.add('hidden');
@@ -586,3 +736,5 @@ if (btnCopyBookmarklet) {
 /* ===================== Init ===================== */
 renderQuotes();
 pickToday();
+updateCloudBackupUI();
+syncCloudBackup();

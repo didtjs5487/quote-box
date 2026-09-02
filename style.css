@@ -169,17 +169,30 @@ button, input, select, textarea { font-family: inherit; }
 }
 .modal-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .hint-text { color: var(--ink-soft); font-size: 12.5px; line-height: 1.6; margin: 0 0 16px; }
+.form-error { color: var(--danger); font-size: 12.5px; min-height: 16px; margin: 6px 0 0; }
 .backup-actions { display: flex; flex-direction: column; gap: 10px; }
 .file-label { text-align: center; }
 
 .capture-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 .block-title { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin: 0 0 8px; }
-.capture-block .btn { display: block; text-align: center; text-decoration: none; margin-bottom: 10px; cursor: grab; }
+.capture-block .btn { display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
+#bookmarklet-link { cursor: grab; }
 .capture-fallback { margin-top: 4px; }
 .capture-fallback summary { font-size: 12.5px; color: var(--accent); cursor: pointer; font-weight: 600; }
 .fallback-steps { margin: 10px 0; padding-left: 20px; color: var(--ink-soft); font-size: 12.5px; line-height: 1.8; }
 .fallback-steps strong { color: var(--ink); }
 .capture-fallback .btn { cursor: pointer; margin-bottom: 0; }
+
+.cloud-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.cloud-form input {
+  border: 1px solid var(--border); background: var(--paper); border-radius: var(--radius-md);
+  padding: 10px 12px; font-size: 16px; color: var(--ink);
+}
+.cloud-hint-row { display: flex; gap: 8px; }
+.cloud-hint-row input { flex: 1; min-width: 0; }
+.cloud-hint-row .btn { margin-bottom: 0; white-space: nowrap; }
+#restore-hint-display:empty { display: none; }
+#restore-hint-display { background: var(--accent-soft); border-radius: var(--radius-sm); padding: 8px 10px; margin: 0; }
 
 .share-qr {
   display: flex; justify-content: center; background: #fff; border: 1px solid var(--border);

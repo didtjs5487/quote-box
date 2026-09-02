@@ -107,6 +107,44 @@
       </label>
     </div>
 
+    <div class="capture-block" id="cloud-backup-block">
+      <p class="block-title">☁️ 백업 암호로 자동 백업</p>
+
+      <div id="cloud-backup-unavailable" class="hint-text hidden">
+        아직 이 앱에 백업 기능이 설정되지 않았어요.
+      </div>
+
+      <div id="cloud-backup-connected" class="hidden">
+        <p class="hint-text">✅ "<strong id="cloud-backup-nickname-display"></strong>" 이름으로 자동 백업되고 있어요. 문장을 담을 때마다 조용히 백업돼요.</p>
+        <button type="button" id="btn-cloud-disconnect" class="btn btn-secondary">연결 해제</button>
+      </div>
+
+      <div id="cloud-backup-setup">
+        <p class="hint-text">숫자 4자리로 암호를 정해두면, 이 기기의 문장이 자동으로 백업돼요. 나중에 새 기기에서 같은 암호를 입력하면 그대로 복구할 수 있어요. 설정 안 해도 앱은 지금처럼 잘 써져요. (간단한 개인용 기능이라 숫자 4자리로 충분해요.)</p>
+        <form id="form-cloud-setup" class="cloud-form">
+          <input type="text" id="cloud-nickname" placeholder="백업 이름 (비밀 아님, 예: 민준 · 아빠폰)" required>
+          <input type="password" id="cloud-password" placeholder="백업 암호 (숫자 4자리, 예: 1234)" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+          <input type="text" id="cloud-hint" placeholder="암호 힌트 (선택, 잊어버렸을 때 볼 수 있어요)">
+          <button type="submit" class="btn btn-primary">☁️ 백업 시작하기</button>
+        </form>
+        <p class="form-error" id="cloud-setup-error"></p>
+
+        <details class="capture-fallback">
+          <summary>다른 기기의 백업에서 복구하기</summary>
+          <form id="form-cloud-restore" class="cloud-form">
+            <div class="cloud-hint-row">
+              <input type="text" id="restore-nickname" placeholder="백업 이름">
+              <button type="button" id="btn-view-hint" class="btn btn-secondary btn-small-note">힌트 보기</button>
+            </div>
+            <p class="hint-text" id="restore-hint-display"></p>
+            <input type="password" id="restore-password" placeholder="백업 암호 (숫자 4자리)" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+            <button type="submit" class="btn btn-primary">📥 복구하기</button>
+          </form>
+          <p class="form-error" id="cloud-restore-error"></p>
+        </details>
+      </div>
+    </div>
+
     <div class="capture-block">
       <p class="block-title">🔖 다른 사이트에서 바로 담기</p>
       <p class="hint-text">PC라면 이 버튼을 북마크바(즐겨찾기 모음줄)로 드래그해두세요. 다른 페이지에서 문장을 드래그해 선택한 뒤 눌러보세요.</p>
@@ -143,6 +181,11 @@
 </div>
 
 <div id="toast-container" class="toast-container"></div>
+
+<!-- Firebase (compat SDK, no build step) — powers the optional cloud backup feature -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script src="qrcode.js"></script>
 <script src="app.js"></script>
