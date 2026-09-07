@@ -83,10 +83,12 @@ const state = {
   items: migrateNotes(migrateCategoryToTags(seedIfNeeded(loadQuotes()))),
   filter: 'all',
   tagFilter: null,
+  tagFilterExpanded: false,
   search: '',
   editingId: null,
   todayId: null,
 };
+const TAG_FILTER_CAP = 10;
 
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -319,12 +321,34 @@ function renderTagFilters() {
     return;
   }
   row.classList.remove('hidden');
-  const tags = [...counts.values()].sort((a, b) => a.label.localeCompare(b.label, 'ko'));
+  const allTags = [...counts.values()].sort((a, b) => a.label.localeCompare(b.label, 'ko'));
 
-  row.innerHTML = tags.map(t => `<button class="tag-filter-btn${state.tagFilter && state.tagFilter.toLowerCase() === t.label.toLowerCase() ? ' active' : ''}" data-topic="${escapeHtml(t.label)}">#${escapeHtml(t.label)}</button>`).join('');
+  let visibleTags = allTags;
+  const overCap = allTags.length > TAG_FILTER_CAP;
+  if (overCap && !state.tagFilterExpanded) {
+    const topByUsage = [...allTags].sort((a, b) => b.count - a.count).slice(0, TAG_FILTER_CAP);
+    const topKeys = new Set(topByUsage.map(t => t.label.toLowerCase()));
+    if (state.tagFilter) topKeys.add(state.tagFilter.toLowerCase());
+    visibleTags = allTags.filter(t => topKeys.has(t.label.toLowerCase()));
+  }
+
+  let html = visibleTags.map(t => `<button class="tag-filter-btn${state.tagFilter && state.tagFilter.toLowerCase() === t.label.toLowerCase() ? ' active' : ''}" data-topic="${escapeHtml(t.label)}">#${escapeHtml(t.label)}</button>`).join('');
+  if (overCap) {
+    html += state.tagFilterExpanded
+      ? `<button class="tag-filter-more" id="btn-tag-filter-more">접기</button>`
+      : `<button class="tag-filter-more" id="btn-tag-filter-more">+${allTags.length - visibleTags.length}개 더보기</button>`;
+  }
+  row.innerHTML = html;
   row.querySelectorAll('.tag-filter-btn').forEach(btn => {
     btn.addEventListener('click', () => setTagFilter(btn.dataset.topic));
   });
+  const moreBtn = document.getElementById('btn-tag-filter-more');
+  if (moreBtn) {
+    moreBtn.addEventListener('click', () => {
+      state.tagFilterExpanded = !state.tagFilterExpanded;
+      renderTagFilters();
+    });
+  }
 }
 
 function setTagFilter(tag) {
