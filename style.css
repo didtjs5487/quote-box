@@ -47,7 +47,7 @@ button, input, select, textarea { font-family: inherit; }
 }
 .icon-btn:active { transform: scale(0.94); }
 
-.app-main { max-width: 640px; margin: 0 auto; padding: 10px 18px 60px; }
+.app-main { max-width: 640px; margin: 0 auto; padding: 10px 18px 100px; }
 
 /* ===== Today's pick ===== */
 .today-card {
@@ -60,11 +60,15 @@ button, input, select, textarea { font-family: inherit; }
 .today-source { font-size: 15px; color: #C9A98F; margin: 0; }
 .today-card .icon-btn { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; font-size: 19px; background: rgba(255,255,255,0.14); border-color: transparent; color: var(--paper); }
 
-.btn-add-jump {
-  display: block; width: 100%; margin: 0 0 18px; background: var(--card); color: var(--accent);
-  border: 1px dashed #EBC9C2;
+.fab-add {
+  position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 60px; height: 60px; border-radius: 50%; border: none;
+  background: var(--accent); color: #fff; font-size: 30px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 24px rgba(43,42,40,.28), 0 3px 8px rgba(43,42,40,.18);
+  cursor: pointer; z-index: 20;
 }
-.btn-add-jump:active { background: var(--accent-soft); }
+.fab-add:active { transform: scale(0.94); }
 
 /* ===== Add form ===== */
 #add-quote-section { margin-top: 30px; }
