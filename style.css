@@ -60,7 +60,14 @@ button, input, select, textarea { font-family: inherit; }
 .today-source { font-size: 15px; color: #C9A98F; margin: 0; }
 .today-card .icon-btn { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; font-size: 19px; background: rgba(255,255,255,0.14); border-color: transparent; color: var(--paper); }
 
+.btn-add-jump {
+  display: block; width: 100%; margin: 0 0 18px; background: var(--card); color: var(--accent);
+  border: 1px dashed #EBC9C2;
+}
+.btn-add-jump:active { background: var(--accent-soft); }
+
 /* ===== Add form ===== */
+#add-quote-section { margin-top: 30px; }
 .quote-add-form {
   display: flex; flex-direction: column; gap: 8px; margin: 10px 0 22px;
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);

@@ -40,15 +40,7 @@
     <button id="btn-shuffle" class="icon-btn" title="다른 문장 보기" aria-label="다른 문장 보기">🎲</button>
   </section>
 
-  <!-- ADD FORM -->
-  <form id="form-quote-add" class="quote-add-form">
-    <textarea id="quote-text" rows="2" placeholder="마음에 남는 문장을 적어보세요…" required></textarea>
-    <input type="text" id="quote-source" placeholder="출처 (선택, 예: 영화 인터스텔라, 괴테)">
-    <input type="url" id="quote-link" placeholder="링크 (선택, 예: https://youtu.be/...)">
-    <textarea id="quote-note" rows="2" placeholder="이 문장을 보고 느낀 점, 깨달은 것 (선택)"></textarea>
-    <input type="text" id="quote-tags" placeholder="태그 (선택, 쉼표로 구분 · 예: 사랑, 위로, 말씀)">
-    <button type="submit" class="btn btn-primary">담아두기</button>
-  </form>
+  <button type="button" id="btn-add-quote" class="btn btn-add-jump">+ 새 문장 담기</button>
 
   <!-- SEARCH -->
   <input type="search" id="search-input" class="search-input" placeholder="검색…">
@@ -69,6 +61,19 @@
   </div>
 
   <div id="quote-list" class="quote-list"></div>
+
+  <!-- ADD FORM -->
+  <section id="add-quote-section">
+    <p class="block-title">✎ 새 문장 담기</p>
+    <form id="form-quote-add" class="quote-add-form">
+      <textarea id="quote-text" rows="2" placeholder="마음에 남는 문장을 적어보세요…" required></textarea>
+      <input type="text" id="quote-source" placeholder="출처 (선택, 예: 영화 인터스텔라, 괴테)">
+      <input type="url" id="quote-link" placeholder="링크 (선택, 예: https://youtu.be/...)">
+      <textarea id="quote-note" rows="2" placeholder="이 문장을 보고 느낀 점, 깨달은 것 (선택)"></textarea>
+      <input type="text" id="quote-tags" placeholder="태그 (선택, 쉼표로 구분 · 예: 사랑, 위로, 말씀)">
+      <button type="submit" class="btn btn-primary">담아두기</button>
+    </form>
+  </section>
 </main>
 
 <!-- EDIT MODAL -->

@@ -135,6 +135,11 @@ function pickToday() {
 }
 document.getElementById('btn-shuffle').addEventListener('click', pickToday);
 
+document.getElementById('btn-add-quote').addEventListener('click', () => {
+  document.getElementById('add-quote-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('quote-text').focus({ preventScroll: true });
+});
+
 /* ===================== Rendering ===================== */
 function renderQuotes() {
   renderTagFilters();
