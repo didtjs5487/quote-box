@@ -78,9 +78,9 @@
 
 <!-- EDIT MODAL -->
 <div id="modal-edit" class="modal-overlay hidden">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
     <div class="modal-header">
-      <h2>수정</h2>
+      <h2 id="modal-edit-title">수정</h2>
       <button id="modal-edit-close" class="icon-btn" aria-label="닫기">✕</button>
     </div>
     <form id="form-quote-edit">
@@ -98,9 +98,9 @@
 
 <!-- EXPORT / IMPORT MODAL -->
 <div id="modal-backup" class="modal-overlay hidden">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-backup-title">
     <div class="modal-header">
-      <h2>내보내기 / 가져오기</h2>
+      <h2 id="modal-backup-title">내보내기 / 가져오기</h2>
       <button id="modal-backup-close" class="icon-btn" aria-label="닫기">✕</button>
     </div>
     <p class="hint-text">이 앱은 이 브라우저 안에만 저장돼요. 다른 기기로 옮기거나 백업해두려면 내보내기를 이용하세요.</p>
@@ -171,9 +171,9 @@
 
 <!-- SHARE MODAL -->
 <div id="modal-share" class="modal-overlay hidden">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-share-title">
     <div class="modal-header">
-      <h2>공유하기</h2>
+      <h2 id="modal-share-title">공유하기</h2>
       <button id="modal-share-close" class="icon-btn" aria-label="닫기">✕</button>
     </div>
     <p class="hint-text">QR코드를 찍거나 링크를 보내면, 받은 사람은 자기 기기에 자신만의 문장갈피를 따로 만들 수 있어요. 서로의 문장은 섞이지 않아요.</p>
@@ -187,7 +187,7 @@
 
 <!-- CONFIRM SHEET (replaces native confirm()) -->
 <div id="modal-confirm" class="modal-overlay hidden">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-describedby="confirm-message">
     <p id="confirm-message"></p>
     <div class="modal-actions">
       <button type="button" id="confirm-cancel" class="btn btn-secondary">취소</button>

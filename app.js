@@ -121,13 +121,19 @@ function toast(msg) {
 
 /* ===================== Modal open/close (animated, focus-managed) ===================== */
 const modalReturnFocus = new WeakMap();
+const FOCUSABLE_SELECTOR = 'input, textarea, select, button, a[href], [tabindex]:not([tabindex="-1"])';
+function focusableElements(el) {
+  return Array.from(el.querySelectorAll(FOCUSABLE_SELECTOR))
+    .filter(node => node.offsetParent !== null && !node.disabled);
+}
 function openModal(el) {
   modalReturnFocus.set(el, document.activeElement);
   el.classList.remove('hidden');
   requestAnimationFrame(() => {
     el.classList.add('is-open');
-    const focusable = el.querySelector('input, textarea, select, button, a[href], [tabindex]');
-    if (focusable) focusable.focus();
+    const visible = focusableElements(el);
+    const primary = visible.find(n => n.tagName === 'TEXTAREA' || n.tagName === 'INPUT' || n.tagName === 'SELECT');
+    (primary || visible[0])?.focus();
   });
 }
 function closeModal(el) {
@@ -139,6 +145,21 @@ function closeModal(el) {
     toFocus.focus();
   }
 }
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const openOverlays = document.querySelectorAll('.modal-overlay.is-open');
+  const openOverlay = openOverlays[openOverlays.length - 1];
+  if (!openOverlay) return;
+  const visible = focusableElements(openOverlay);
+  if (visible.length === 0) return;
+  const first = visible[0];
+  const last = visible[visible.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault(); last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault(); first.focus();
+  }
+});
 
 /* ===================== In-app confirm sheet (replaces native confirm()) ===================== */
 const confirmModal = document.getElementById('modal-confirm');
