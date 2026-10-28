@@ -112,15 +112,49 @@ function toast(msg) {
   el.className = 'toast';
   el.textContent = msg;
   c.appendChild(el);
-  setTimeout(() => el.remove(), 2600);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 220);
+  }, 2600);
 }
+
+/* ===================== Modal open/close (animated) ===================== */
+function openModal(el) {
+  el.classList.remove('hidden');
+  requestAnimationFrame(() => el.classList.add('is-open'));
+}
+function closeModal(el) {
+  el.classList.remove('is-open');
+  setTimeout(() => el.classList.add('hidden'), 220);
+}
+
+/* ===================== In-app confirm sheet (replaces native confirm()) ===================== */
+const confirmModal = document.getElementById('modal-confirm');
+const confirmMessageEl = document.getElementById('confirm-message');
+const confirmOkBtn = document.getElementById('confirm-ok');
+const confirmCancelBtn = document.getElementById('confirm-cancel');
+let confirmResolve = null;
+function confirmDialog(message, okLabel) {
+  confirmMessageEl.textContent = message;
+  confirmOkBtn.textContent = okLabel || '확인';
+  openModal(confirmModal);
+  return new Promise((resolve) => { confirmResolve = resolve; });
+}
+function resolveConfirm(result) {
+  closeModal(confirmModal);
+  if (confirmResolve) { confirmResolve(result); confirmResolve = null; }
+}
+confirmOkBtn.addEventListener('click', () => resolveConfirm(true));
+confirmCancelBtn.addEventListener('click', () => resolveConfirm(false));
+confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) resolveConfirm(false); });
 function formatDate(iso) {
   const d = new Date(iso);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /* ===================== Today's pick ===================== */
-function pickToday() {
+function pickToday(crossfade) {
   const card = document.getElementById('today-pick');
   if (state.items.length === 0) {
     card.classList.add('hidden');
@@ -129,11 +163,24 @@ function pickToday() {
   const pool = state.items.filter(q => q.id !== state.todayId);
   const pick = (pool.length > 0 ? pool : state.items)[Math.floor(Math.random() * (pool.length > 0 ? pool.length : state.items.length))];
   state.todayId = pick.id;
-  document.getElementById('today-text').textContent = pick.text;
-  document.getElementById('today-source').textContent = pick.source ? `— ${pick.source}` : '';
   card.classList.remove('hidden');
+
+  const textEl = document.getElementById('today-text');
+  const sourceEl = document.getElementById('today-source');
+  const applyText = () => {
+    textEl.textContent = pick.text;
+    sourceEl.textContent = pick.source ? `— ${pick.source}` : '';
+  };
+  if (!crossfade) { applyText(); return; }
+  textEl.classList.add('fading');
+  sourceEl.classList.add('fading');
+  setTimeout(() => {
+    applyText();
+    textEl.classList.remove('fading');
+    sourceEl.classList.remove('fading');
+  }, 180);
 }
-document.getElementById('btn-shuffle').addEventListener('click', pickToday);
+document.getElementById('btn-shuffle').addEventListener('click', () => pickToday(true));
 
 document.getElementById('btn-add-quote').addEventListener('click', () => {
   document.getElementById('add-quote-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -172,6 +219,9 @@ function renderQuotes() {
     const notes = q.notes || [];
     const card = document.createElement('div');
     card.className = 'quote-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    if (state.lastAddedId === q.id) card.classList.add('enter');
     card.innerHTML = `
       <p class="quote-text" title="눌러서 느낀 점 남기기">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
@@ -191,7 +241,9 @@ function renderQuotes() {
       e.stopPropagation();
       openEditModal(q.id);
     });
-    card.querySelector('.quote-fav-btn').addEventListener('click', (e) => {
+    const favBtn = card.querySelector('.quote-fav-btn');
+    if (state.pulseFavId === q.id) favBtn.classList.add('pop');
+    favBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleFavorite(q.id);
     });
@@ -224,8 +276,14 @@ function renderQuotes() {
       });
     });
     card.addEventListener('click', () => openEditModal(q.id));
+    card.addEventListener('keydown', (e) => {
+      if (e.target !== card) return;
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditModal(q.id); }
+    });
     list.appendChild(card);
   });
+  state.lastAddedId = null;
+  state.pulseFavId = null;
 }
 
 function noteItemHTML(n) {
@@ -367,6 +425,7 @@ function toggleFavorite(id) {
   q.favorite = !q.favorite;
   saveQuotes(state.items);
   syncCloudBackup();
+  state.pulseFavId = id;
   renderQuotes();
 }
 
@@ -395,8 +454,9 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   const tags = parseTags(document.getElementById('quote-tags').value);
   const createdAt = new Date().toISOString();
   const notes = noteText ? [{ id: uid(), text: noteText, createdAt }] : [];
+  const newId = uid();
   state.items.push({
-    id: uid(), text, source, link, notes, tags, favorite: false, createdAt,
+    id: newId, text, source, link, notes, tags, favorite: false, createdAt,
   });
   saveQuotes(state.items);
   syncCloudBackup();
@@ -405,6 +465,7 @@ document.getElementById('form-quote-add').addEventListener('submit', (e) => {
   document.getElementById('quote-link').value = '';
   document.getElementById('quote-note').value = '';
   document.getElementById('quote-tags').value = '';
+  state.lastAddedId = newId;
   renderQuotes();
   pickToday();
   toast('담아뒀어요');
@@ -420,9 +481,9 @@ function openEditModal(id) {
   document.getElementById('edit-source').value = q.source || '';
   document.getElementById('edit-link').value = q.link || '';
   document.getElementById('edit-tags').value = (q.tags || []).join(', ');
-  editModal.classList.remove('hidden');
+  openModal(editModal);
 }
-function closeEditModal() { editModal.classList.add('hidden'); state.editingId = null; }
+function closeEditModal() { closeModal(editModal); state.editingId = null; }
 document.getElementById('modal-edit-close').addEventListener('click', closeEditModal);
 editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
 
@@ -443,8 +504,8 @@ document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
   pickToday();
 });
 
-document.getElementById('btn-delete-quote').addEventListener('click', () => {
-  if (!confirm('이 문장을 삭제할까요?')) return;
+document.getElementById('btn-delete-quote').addEventListener('click', async () => {
+  if (!(await confirmDialog('이 문장을 삭제할까요?', '삭제'))) return;
   state.items = state.items.filter(it => it.id !== state.editingId);
   saveQuotes(state.items);
   syncCloudBackup();
@@ -473,10 +534,10 @@ document.getElementById('btn-share').addEventListener('click', () => {
   const url = shareUrl();
   document.getElementById('share-qr').innerHTML = buildQrSvg(url);
   document.getElementById('share-link-input').value = url;
-  shareModal.classList.remove('hidden');
+  openModal(shareModal);
 });
-document.getElementById('modal-share-close').addEventListener('click', () => shareModal.classList.add('hidden'));
-shareModal.addEventListener('click', (e) => { if (e.target === shareModal) shareModal.classList.add('hidden'); });
+document.getElementById('modal-share-close').addEventListener('click', () => closeModal(shareModal));
+shareModal.addEventListener('click', (e) => { if (e.target === shareModal) closeModal(shareModal); });
 
 document.getElementById('btn-copy-link').addEventListener('click', async () => {
   const input = document.getElementById('share-link-input');
@@ -568,8 +629,8 @@ document.getElementById('form-cloud-setup').addEventListener('submit', async (e)
   }
 });
 
-document.getElementById('btn-cloud-disconnect').addEventListener('click', () => {
-  if (!confirm('이 기기의 자동 백업 연결을 해제할까요? (클라우드에 저장된 데이터는 그대로 남아있고, 나중에 같은 암호로 다시 연결할 수 있어요)')) return;
+document.getElementById('btn-cloud-disconnect').addEventListener('click', async () => {
+  if (!(await confirmDialog('이 기기의 자동 백업 연결을 해제할까요? (클라우드에 저장된 데이터는 그대로 남아있고, 나중에 같은 암호로 다시 연결할 수 있어요)', '연결 해제'))) return;
   state.cloudNickname = null;
   state.cloudHash = null;
   localStorage.removeItem(CLOUD_NICKNAME_KEY);
@@ -633,9 +694,9 @@ document.getElementById('form-cloud-restore').addEventListener('submit', async (
 
 /* ===================== Backup: export / import ===================== */
 const backupModal = document.getElementById('modal-backup');
-document.getElementById('btn-export').addEventListener('click', () => backupModal.classList.remove('hidden'));
-document.getElementById('modal-backup-close').addEventListener('click', () => backupModal.classList.add('hidden'));
-backupModal.addEventListener('click', (e) => { if (e.target === backupModal) backupModal.classList.add('hidden'); });
+document.getElementById('btn-export').addEventListener('click', () => openModal(backupModal));
+document.getElementById('modal-backup-close').addEventListener('click', () => closeModal(backupModal));
+backupModal.addEventListener('click', (e) => { if (e.target === backupModal) closeModal(backupModal); });
 
 document.getElementById('btn-do-export').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(state.items, null, 2)], { type: 'application/json' });
@@ -691,7 +752,7 @@ document.getElementById('import-file').addEventListener('change', (e) => {
       syncCloudBackup();
       renderQuotes();
       pickToday();
-      backupModal.classList.add('hidden');
+      closeModal(backupModal);
       toast(`${imported.length}개 항목을 가져왔어요`);
     } catch (err) {
       toast('파일을 읽을 수 없어요. JSON 형식을 확인해주세요.');
