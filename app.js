@@ -119,14 +119,25 @@ function toast(msg) {
   }, 2600);
 }
 
-/* ===================== Modal open/close (animated) ===================== */
+/* ===================== Modal open/close (animated, focus-managed) ===================== */
+const modalReturnFocus = new WeakMap();
 function openModal(el) {
+  modalReturnFocus.set(el, document.activeElement);
   el.classList.remove('hidden');
-  requestAnimationFrame(() => el.classList.add('is-open'));
+  requestAnimationFrame(() => {
+    el.classList.add('is-open');
+    const focusable = el.querySelector('input, textarea, select, button, a[href], [tabindex]');
+    if (focusable) focusable.focus();
+  });
 }
 function closeModal(el) {
   el.classList.remove('is-open');
   setTimeout(() => el.classList.add('hidden'), 220);
+  const toFocus = modalReturnFocus.get(el);
+  modalReturnFocus.delete(el);
+  if (toFocus && typeof toFocus.focus === 'function' && document.contains(toFocus)) {
+    toFocus.focus();
+  }
 }
 
 /* ===================== In-app confirm sheet (replaces native confirm()) ===================== */
@@ -267,8 +278,9 @@ function renderQuotes() {
         e.stopPropagation();
         openNoteItemEditor(itemEl, q, note);
       });
-      itemEl.querySelector('.quote-note-del').addEventListener('click', (e) => {
+      itemEl.querySelector('.quote-note-del').addEventListener('click', async (e) => {
         e.stopPropagation();
+        if (!(await confirmDialog('이 기록을 삭제할까요?', '삭제'))) return;
         q.notes = (q.notes || []).filter(n => n.id !== noteId);
         saveQuotes(state.items);
         syncCloudBackup();
@@ -822,6 +834,15 @@ if (btnCopyBookmarklet) {
     toast('주소를 복사했어요. 북마크 편집 화면에 붙여넣어주세요');
   });
 }
+
+/* ===================== Keyboard: Escape closes the topmost open modal ===================== */
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (confirmModal.classList.contains('is-open')) { resolveConfirm(false); return; }
+  if (editModal.classList.contains('is-open')) { closeEditModal(); return; }
+  if (shareModal.classList.contains('is-open')) { closeModal(shareModal); return; }
+  if (backupModal.classList.contains('is-open')) { closeModal(backupModal); return; }
+});
 
 /* ===================== Init ===================== */
 renderQuotes();
