@@ -212,7 +212,13 @@ function pickToday(crossfade) {
     sourceEl.classList.remove('fading');
   }, 180);
 }
-document.getElementById('btn-shuffle').addEventListener('click', () => pickToday(true));
+document.getElementById('btn-shuffle').addEventListener('click', () => {
+  const btn = document.getElementById('btn-shuffle');
+  btn.classList.remove('spin');
+  void btn.offsetWidth; // restart animation on repeated clicks
+  btn.classList.add('spin');
+  pickToday(true);
+});
 
 document.getElementById('btn-add-quote').addEventListener('click', () => {
   document.getElementById('add-quote-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -254,6 +260,10 @@ function renderQuotes() {
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
     if (state.lastAddedId === q.id) card.classList.add('enter');
+    if (q.favorite) {
+      card.classList.add('is-fav');
+      if (state.pulseFavId === q.id) card.classList.add('fold-in');
+    }
     card.innerHTML = `
       <p class="quote-text" title="눌러서 느낀 점 남기기">${escapeHtml(q.text)}</p>
       ${q.source ? `<p class="quote-source">— ${escapeHtml(q.source)}</p>` : ''}
@@ -333,7 +343,7 @@ function noteItemHTML(n) {
 
 function buildNoteEditor({ initialText, placeholder, saveLabel, onSave, onCancel }) {
   const wrap = document.createElement('div');
-  wrap.className = 'quote-note-edit';
+  wrap.className = 'quote-note-edit reveal';
   const ta = document.createElement('textarea');
   ta.rows = 2;
   ta.placeholder = placeholder;
@@ -447,9 +457,18 @@ function renderTagFilters() {
   }
 }
 
+function renderQuotesWithFade() {
+  const list = document.getElementById('quote-list');
+  list.classList.add('list-fading');
+  setTimeout(() => {
+    renderQuotes();
+    requestAnimationFrame(() => list.classList.remove('list-fading'));
+  }, 120);
+}
+
 function setTagFilter(tag) {
   state.tagFilter = (state.tagFilter && state.tagFilter.toLowerCase() === tag.toLowerCase()) ? null : tag;
-  renderQuotes();
+  renderQuotesWithFade();
 }
 
 function toggleFavorite(id) {
@@ -467,7 +486,7 @@ document.querySelectorAll('[data-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
     state.filter = btn.dataset.filter;
     document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === btn));
-    renderQuotes();
+    renderQuotesWithFade();
   });
 });
 document.getElementById('search-input').addEventListener('input', (e) => {
