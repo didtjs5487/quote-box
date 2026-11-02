@@ -79,16 +79,28 @@ function migrateCategoryToTags(items) {
   return items;
 }
 
+function migrateViewCount(items) {
+  let changed = false;
+  items.forEach((q) => {
+    if (typeof q.viewCount !== 'number') { q.viewCount = 0; changed = true; }
+  });
+  if (changed) saveQuotes(items);
+  return items;
+}
+
 const state = {
-  items: migrateNotes(migrateCategoryToTags(seedIfNeeded(loadQuotes()))),
+  items: migrateViewCount(migrateNotes(migrateCategoryToTags(seedIfNeeded(loadQuotes())))),
   filter: 'all',
   tagFilter: null,
   tagFilterExpanded: false,
   search: '',
   editingId: null,
   todayId: null,
+  sortMode: 'newest', // 'newest' | 'oldest' | 'shuffle'
 };
 const TAG_FILTER_CAP = 10;
+const SORT_LABEL = { newest: '최신순', oldest: '오래된순', shuffle: '랜덤' };
+const SORT_CYCLE = ['newest', 'oldest', 'shuffle'];
 
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -185,6 +197,117 @@ function formatDate(iso) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
+/* ===================== Quote as image (share / download) ===================== */
+function wrapCanvasText(ctx, text, maxWidth) {
+  const lines = [];
+  text.split('\n').forEach((paragraph) => {
+    if (paragraph === '') { lines.push(''); return; }
+    const words = paragraph.split(' ');
+    let line = '';
+    words.forEach((word) => {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width <= maxWidth) { line = test; return; }
+      if (line) { lines.push(line); line = ''; }
+      if (ctx.measureText(word).width <= maxWidth) {
+        line = word;
+      } else {
+        let chunk = '';
+        for (const ch of word) {
+          const test2 = chunk + ch;
+          if (ctx.measureText(test2).width > maxWidth && chunk) {
+            lines.push(chunk);
+            chunk = ch;
+          } else {
+            chunk = test2;
+          }
+        }
+        line = chunk;
+      }
+    });
+    if (line) lines.push(line);
+  });
+  return lines;
+}
+
+async function renderQuoteImage(q) {
+  if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) { /* ignore */ } }
+  const W = 1080, H = 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#2B2A28';
+  ctx.fillRect(0, 0, W, H);
+
+  const padX = 90;
+  const maxWidth = W - padX * 2;
+
+  ctx.fillStyle = '#C9A98F';
+  ctx.font = '600 26px "IBM Plex Mono", monospace';
+  ctx.fillText('오늘의 한마디', padX, 110);
+
+  const textTop = 200;
+  const textBottomLimit = H - 260;
+  let fontSize = 64;
+  let lines = [];
+  let lineHeight = 0;
+  while (fontSize > 28) {
+    ctx.font = `500 ${fontSize}px Fraunces, serif`;
+    lines = wrapCanvasText(ctx, q.text, maxWidth);
+    lineHeight = fontSize * 1.42;
+    if (lines.length * lineHeight <= (textBottomLimit - textTop)) break;
+    fontSize -= 2;
+  }
+  ctx.font = `500 ${fontSize}px Fraunces, serif`;
+  ctx.fillStyle = '#FAF6EE';
+  const blockHeight = lines.length * lineHeight;
+  let y = textTop + Math.max(0, (textBottomLimit - textTop - blockHeight) / 2) + fontSize * 0.9;
+  lines.forEach((line) => {
+    ctx.fillText(line, padX, y);
+    y += lineHeight;
+  });
+
+  if (q.source) {
+    ctx.font = '400 30px "Work Sans", sans-serif';
+    ctx.fillStyle = '#C9A98F';
+    ctx.fillText(`— ${q.source}`, padX, H - 150);
+  }
+
+  ctx.font = '600 22px "IBM Plex Mono", monospace';
+  ctx.fillStyle = 'rgba(250,246,238,0.45)';
+  ctx.fillText('문장갈피에서', padX, H - 70);
+
+  return canvas;
+}
+
+async function shareQuoteImage(q) {
+  toast('이미지를 만들고 있어요…');
+  let canvas;
+  try {
+    canvas = await renderQuoteImage(q);
+  } catch (e) {
+    toast('이미지 생성에 실패했어요');
+    return;
+  }
+  canvas.toBlob(async (blob) => {
+    if (!blob) { toast('이미지 생성에 실패했어요'); return; }
+    const file = new File([blob], `quote-box-${q.id}.png`, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: '문장갈피' });
+        return;
+      } catch (e) { /* cancelled or unsupported — fall through to download */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quote-box-${q.id}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('이미지를 저장했어요');
+  }, 'image/png');
+}
+
 /* ===================== Today's pick ===================== */
 function pickToday(crossfade) {
   const card = document.getElementById('today-pick');
@@ -195,6 +318,8 @@ function pickToday(crossfade) {
   const pool = state.items.filter(q => q.id !== state.todayId);
   const pick = (pool.length > 0 ? pool : state.items)[Math.floor(Math.random() * (pool.length > 0 ? pool.length : state.items.length))];
   state.todayId = pick.id;
+  pick.viewCount = (pick.viewCount || 0) + 1;
+  saveQuotes(state.items);
   card.classList.remove('hidden');
 
   const textEl = document.getElementById('today-text');
@@ -220,9 +345,40 @@ document.getElementById('btn-shuffle').addEventListener('click', () => {
   pickToday(true);
 });
 
+/* ===================== Today's pick size control ===================== */
+const TODAY_SIZE_KEY = 'quoteBoxTodaySize';
+const TODAY_SIZES = ['sm', 'md', 'lg', 'xl'];
+state.todaySize = TODAY_SIZES.includes(localStorage.getItem(TODAY_SIZE_KEY)) ? localStorage.getItem(TODAY_SIZE_KEY) : 'md';
+function applyTodaySize() {
+  document.getElementById('today-pick').dataset.size = state.todaySize;
+  document.getElementById('btn-today-size-down').disabled = state.todaySize === TODAY_SIZES[0];
+  document.getElementById('btn-today-size-up').disabled = state.todaySize === TODAY_SIZES[TODAY_SIZES.length - 1];
+}
+function changeTodaySize(delta) {
+  const idx = TODAY_SIZES.indexOf(state.todaySize);
+  const next = TODAY_SIZES[Math.min(TODAY_SIZES.length - 1, Math.max(0, idx + delta))];
+  if (next === state.todaySize) return;
+  state.todaySize = next;
+  localStorage.setItem(TODAY_SIZE_KEY, next);
+  applyTodaySize();
+}
+document.getElementById('btn-today-size-down').addEventListener('click', (e) => { e.stopPropagation(); changeTodaySize(-1); });
+document.getElementById('btn-today-size-up').addEventListener('click', (e) => { e.stopPropagation(); changeTodaySize(1); });
+applyTodaySize();
+
 document.getElementById('btn-add-quote').addEventListener('click', () => {
   document.getElementById('add-quote-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.getElementById('quote-text').focus({ preventScroll: true });
+});
+
+document.getElementById('btn-sort').addEventListener('click', () => {
+  const idx = SORT_CYCLE.indexOf(state.sortMode);
+  state.sortMode = SORT_CYCLE[(idx + 1) % SORT_CYCLE.length];
+  if (state.sortMode === 'shuffle') {
+    state.shuffleOrder = [...state.items].map(q => q.id).sort(() => Math.random() - 0.5);
+  }
+  toast(`${SORT_LABEL[state.sortMode]}으로 정렬했어요`);
+  renderQuotesWithFade();
 });
 
 /* ===================== Rendering ===================== */
@@ -231,8 +387,20 @@ function renderQuotes() {
   const list = document.getElementById('quote-list');
   list.innerHTML = '';
 
-  let items = [...state.items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  let items = [...state.items];
+  if (state.sortMode === 'oldest') {
+    items.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  } else if (state.sortMode === 'shuffle' && state.shuffleOrder) {
+    const order = state.shuffleOrder;
+    items.sort((a, b) => {
+      const ai = order.indexOf(a.id); const bi = order.indexOf(b.id);
+      return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+    });
+  } else {
+    items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
   if (state.filter === 'fav') items = items.filter(q => q.favorite);
+  if (state.filter === 'frequent') items = items.filter(q => q.viewCount > 0).sort((a, b) => b.viewCount - a.viewCount);
   if (state.tagFilter) {
     const t = state.tagFilter.toLowerCase();
     items = items.filter(q => (q.tags || []).some(tag => tag.toLowerCase() === t));
@@ -274,6 +442,7 @@ function renderQuotes() {
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
         <div class="quote-actions">
+          <button class="quote-image-btn" title="이미지로 공유">🖼</button>
           <button class="quote-edit-btn" title="문장 수정">✎ 수정</button>
           <button class="quote-fav-btn" title="즐겨찾기">${q.favorite ? '⭐' : '☆'}</button>
         </div>
@@ -282,6 +451,10 @@ function renderQuotes() {
     card.querySelector('.quote-edit-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       openEditModal(q.id);
+    });
+    card.querySelector('.quote-image-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      shareQuoteImage(q);
     });
     const favBtn = card.querySelector('.quote-fav-btn');
     if (state.pulseFavId === q.id) favBtn.classList.add('pop');
@@ -566,6 +739,72 @@ document.getElementById('btn-delete-quote').addEventListener('click', async () =
   pickToday();
 });
 
+/* ===================== Stats / timeline (모아보기) ===================== */
+const statsModal = document.getElementById('modal-stats');
+function renderStats() {
+  const body = document.getElementById('stats-body');
+  const items = state.items;
+  const total = items.length;
+
+  if (total === 0) {
+    body.innerHTML = `<p class="hint-text">아직 담아둔 문장이 없어요. 문장을 담으면 여기에 기록이 쌓여요.</p>`;
+    openModal(statsModal);
+    return;
+  }
+
+  const now = new Date();
+  const thisMonthKey = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const thisYear = now.getFullYear();
+  let monthCount = 0, yearCount = 0;
+  const monthGroups = new Map();
+  items.forEach(q => {
+    const d = new Date(q.createdAt);
+    const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthGroups.set(key, (monthGroups.get(key) || 0) + 1);
+    if (key === thisMonthKey) monthCount += 1;
+    if (d.getFullYear() === thisYear) yearCount += 1;
+  });
+  const monthKeys = [...monthGroups.keys()].sort().reverse();
+  const topViewed = [...items].filter(q => q.viewCount > 0).sort((a, b) => b.viewCount - a.viewCount).slice(0, 3);
+  const oldest = [...items].sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+  const truncate = (s, n) => s.length > n ? s.slice(0, n) + '…' : s;
+
+  body.innerHTML = `
+    <div class="stats-highlight">
+      <div class="stats-number">${total}</div>
+      <div class="stats-number-label">모아둔 문장</div>
+    </div>
+    <p class="hint-text" style="text-align:center">이번 달 ${monthCount}개 · 올해 ${yearCount}개 담았어요</p>
+
+    <div class="stats-section">
+      <h3 class="block-title">월별로</h3>
+      ${monthKeys.map(k => {
+        const [y, m] = k.split('.');
+        return `<div class="stats-row"><span>${y}년 ${Number(m)}월</span><span class="count">${monthGroups.get(k)}개</span></div>`;
+      }).join('')}
+    </div>
+
+    ${topViewed.length ? `
+    <div class="stats-section">
+      <h3 class="block-title">자주 꺼내본 문장</h3>
+      ${topViewed.map(q => `
+        <p class="stats-quote-preview">${escapeHtml(truncate(q.text, 60))}</p>
+        <p class="stats-quote-meta">${q.source ? escapeHtml(q.source) + ' · ' : ''}${q.viewCount}번 봤어요</p>
+      `).join('')}
+    </div>` : ''}
+
+    <div class="stats-section">
+      <h3 class="block-title">처음 담은 문장</h3>
+      <p class="stats-quote-preview">${escapeHtml(truncate(oldest.text, 80))}</p>
+      <p class="stats-quote-meta">${formatDate(oldest.createdAt)}${oldest.source ? ' · ' + escapeHtml(oldest.source) : ''}</p>
+    </div>
+  `;
+  openModal(statsModal);
+}
+document.getElementById('btn-stats').addEventListener('click', renderStats);
+document.getElementById('modal-stats-close').addEventListener('click', () => closeModal(statsModal));
+statsModal.addEventListener('click', (e) => { if (e.target === statsModal) closeModal(statsModal); });
+
 /* ===================== Share ===================== */
 const shareModal = document.getElementById('modal-share');
 function shareUrl() {
@@ -763,6 +1002,24 @@ function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+
+document.getElementById('btn-print-pdf').addEventListener('click', () => {
+  if (state.items.length === 0) { toast('담아둔 문장이 없어요'); return; }
+  const el = document.getElementById('print-collection');
+  const items = [...state.items].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  el.innerHTML = `
+    <h1 class="print-title">문장갈피</h1>
+    <p class="print-subtitle">마음에 남는 문장 모음 · ${items.length}개 · ${todayStr()}</p>
+    ${items.map(q => `
+      <div class="print-quote">
+        <p class="print-quote-text">${escapeHtml(q.text)}</p>
+        ${q.source ? `<p class="print-quote-source">— ${escapeHtml(q.source)}</p>` : ''}
+        <p class="print-quote-meta">${formatDate(q.createdAt)}${(q.tags || []).length ? ' · ' + q.tags.map(t => '#' + escapeHtml(t)).join(' ') : ''}</p>
+      </div>
+    `).join('')}
+  `;
+  window.print();
+});
 
 document.getElementById('import-file').addEventListener('change', (e) => {
   const file = e.target.files[0];

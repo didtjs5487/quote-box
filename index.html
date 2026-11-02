@@ -25,6 +25,7 @@
     <p class="tagline">마음에 남는 문장을 태그로 모아두는 곳</p>
   </div>
   <div class="header-actions">
+    <button id="btn-stats" class="icon-btn" title="모아보기" aria-label="모아보기">📊</button>
     <button id="btn-share" class="icon-btn" title="공유하기" aria-label="공유하기">🔗</button>
     <button id="btn-export" class="icon-btn" title="내보내기 / 가져오기" aria-label="내보내기 / 가져오기">⚙️</button>
   </div>
@@ -37,16 +38,24 @@
     <p class="today-label">오늘의 한마디</p>
     <p class="today-text" id="today-text"></p>
     <p class="today-source" id="today-source"></p>
-    <button id="btn-shuffle" class="icon-btn" title="다른 문장 보기" aria-label="다른 문장 보기">🎲</button>
+    <div class="today-card-controls">
+      <button id="btn-today-size-down" class="icon-btn today-size-btn" title="글씨 작게" aria-label="글씨 작게">−</button>
+      <button id="btn-today-size-up" class="icon-btn today-size-btn" title="글씨 크게" aria-label="글씨 크게">+</button>
+      <button id="btn-shuffle" class="icon-btn" title="다른 문장 보기" aria-label="다른 문장 보기">🎲</button>
+    </div>
   </section>
 
   <!-- SEARCH -->
-  <input type="search" id="search-input" class="search-input" placeholder="검색…">
+  <div class="search-row">
+    <input type="search" id="search-input" class="search-input" placeholder="검색…">
+    <button type="button" id="btn-sort" class="icon-btn" title="정렬 바꾸기" aria-label="정렬 바꾸기">↕️</button>
+  </div>
 
   <!-- FILTERS -->
   <div class="filter-row">
     <button class="filter-btn active" data-filter="all">전체</button>
     <button class="filter-btn" data-filter="fav">⭐ 즐겨찾기</button>
+    <button class="filter-btn" data-filter="frequent">🔥 자주 보는</button>
   </div>
 
   <!-- TOPIC (TAG) FILTERS -->
@@ -110,6 +119,7 @@
         📥 JSON 파일 가져오기
         <input type="file" id="import-file" accept="application/json" hidden>
       </label>
+      <button id="btn-print-pdf" class="btn btn-secondary">📖 PDF로 모음집 만들기</button>
     </div>
 
     <div class="capture-block" id="cloud-backup-block">
@@ -169,6 +179,17 @@
   </div>
 </div>
 
+<!-- STATS / TIMELINE MODAL -->
+<div id="modal-stats" class="modal-overlay hidden">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-stats-title">
+    <div class="modal-header">
+      <h2 id="modal-stats-title">모아보기</h2>
+      <button id="modal-stats-close" class="icon-btn" aria-label="닫기">✕</button>
+    </div>
+    <div id="stats-body"></div>
+  </div>
+</div>
+
 <!-- SHARE MODAL -->
 <div id="modal-share" class="modal-overlay hidden">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-share-title">
@@ -195,6 +216,8 @@
     </div>
   </div>
 </div>
+
+<div id="print-collection" class="print-only"></div>
 
 <div id="toast-container" class="toast-container"></div>
 

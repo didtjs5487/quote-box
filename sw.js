@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quote-box-v8';
+const CACHE_NAME = 'quote-box-v9';
 const APP_SHELL = [
   './',
   './index.html',

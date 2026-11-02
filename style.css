@@ -60,14 +60,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 /* ===== Today's pick ===== */
 .today-card {
   position: relative; background: var(--ink); color: var(--paper);
-  border-radius: 24px; padding: 36px 70px 30px 30px; margin: 14px 0 24px;
+  border-radius: 24px; padding: 30px 68px 26px 28px; margin: 14px 0 24px;
   box-shadow: 0 14px 36px rgba(43,42,40,.28), 0 3px 10px rgba(43,42,40,.16);
 }
 .today-label { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 1.5px; color: #C9A98F; margin: 0 0 14px; text-transform: uppercase; font-weight: 600; }
-.today-text { font-family: var(--font-display); font-weight: 500; font-size: 32px; line-height: 1.42; margin: 0 0 14px; white-space: pre-wrap; transition: opacity .18s ease; }
+.today-text { font-family: var(--font-display); font-weight: 500; font-size: 27px; line-height: 1.45; margin: 0 0 14px; white-space: pre-wrap; transition: opacity .18s ease, font-size .2s var(--ease-settle); }
 .today-source { font-size: 15px; color: #C9A98F; margin: 0; transition: opacity .18s ease; }
 .today-text.fading, .today-source.fading { opacity: 0; }
-.today-card .icon-btn { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; font-size: 19px; background: rgba(255,255,255,0.14); border-color: transparent; color: var(--paper); }
+
+#today-pick[data-size="sm"] { padding: 24px 64px 20px 24px; }
+#today-pick[data-size="sm"] .today-text { font-size: 21px; line-height: 1.5; }
+#today-pick[data-size="lg"] { padding: 36px 70px 30px 30px; }
+#today-pick[data-size="lg"] .today-text { font-size: 32px; line-height: 1.42; }
+#today-pick[data-size="xl"] { padding: 40px 74px 34px 34px; }
+#today-pick[data-size="xl"] .today-text { font-size: 38px; line-height: 1.38; }
+
+.today-card-controls { position: absolute; top: 16px; right: 16px; display: flex; gap: 6px; }
+.today-card-controls .icon-btn {
+  position: static; width: 38px; height: 38px; font-size: 16px;
+  background: rgba(255,255,255,0.14); border-color: transparent; color: var(--paper);
+}
+.today-size-btn { font-weight: 700; font-family: var(--font-mono); }
+.today-card-controls .icon-btn:disabled { opacity: 0.3; cursor: default; }
+.today-card-controls .icon-btn:disabled:active { transform: none; }
 @keyframes diceSpin { from { transform: rotate(0deg) scale(1); } 40% { transform: rotate(200deg) scale(1.12); } to { transform: rotate(360deg) scale(1); } }
 #btn-shuffle.spin { animation: diceSpin .5s var(--ease-settle); }
 
@@ -104,9 +119,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .btn-ghost { background: transparent; color: var(--danger); text-decoration: underline; padding: 8px; }
 
 /* ===== Search & filters ===== */
+.search-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .search-input {
-  width: 100%; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
-  padding: 10px 14px; font-size: 16px; margin-bottom: 10px; color: var(--ink);
+  flex: 1; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-md);
+  padding: 10px 14px; font-size: 16px; color: var(--ink);
 }
 .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .filter-btn {
@@ -192,6 +208,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .quote-foot { display: flex; align-items: center; gap: 4px; }
 .quote-date { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); }
 .quote-actions { margin-left: auto; display: flex; align-items: center; gap: 0; }
+.quote-image-btn {
+  background: none; border: none; font-size: 18px; cursor: pointer; line-height: 1; color: var(--ink-soft);
+  width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  transition: transform .15s var(--ease-settle);
+}
+.quote-image-btn:active { color: var(--ink); transform: scale(0.9); }
 .quote-edit-btn {
   background: var(--paper); border: 1px solid var(--border); border-radius: 12px;
   font-size: 11.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
@@ -239,6 +261,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 .capture-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 .block-title { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin: 0 0 8px; }
+
+/* ===== Stats / timeline ===== */
+.stats-highlight { text-align: center; padding: 10px 0 18px; }
+.stats-number { font-family: var(--font-display); font-size: 42px; font-weight: 600; color: var(--ink); line-height: 1; }
+.stats-number-label { font-size: 12.5px; color: var(--ink-soft); margin-top: 6px; }
+.stats-section { margin-top: 18px; }
+.stats-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+.stats-row:last-child { border-bottom: none; }
+.stats-row .count { color: var(--ink-soft); font-family: var(--font-mono); font-size: 12px; }
+.stats-quote-preview {
+  font-family: var(--font-display); font-size: 14.5px; line-height: 1.6; color: var(--ink);
+  background: var(--paper); border-radius: var(--radius-md); padding: 12px 14px; margin: 0 0 6px; white-space: pre-wrap;
+}
+.stats-quote-meta { font-size: 11.5px; color: var(--ink-soft); margin: 0 0 14px; }
 .capture-block .btn { display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
 #bookmarklet-link { cursor: grab; }
 .capture-fallback { margin-top: 4px; }
@@ -306,4 +342,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .quote-card.fold-in::before { animation: none; }
   .quote-note-edit.reveal { animation: none; }
   .quote-list.list-fading { transition: none; }
+}
+
+/* ===== Print collection (PDF export via browser print) ===== */
+.print-only { display: none; }
+.print-title { font-family: var(--font-display); font-size: 26px; margin: 0 0 4px; color: #111; }
+.print-subtitle { font-family: var(--font-mono); font-size: 11px; color: #666; margin: 0 0 28px; }
+.print-quote { break-inside: avoid; margin: 0 0 22px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
+.print-quote-text { font-family: var(--font-display); font-size: 15px; line-height: 1.6; white-space: pre-wrap; margin: 0 0 6px; color: #111; }
+.print-quote-source { font-size: 11px; color: #555; margin: 0 0 4px; }
+.print-quote-meta { font-size: 10px; color: #888; font-family: var(--font-mono); margin: 0; }
+
+@media print {
+  body * { visibility: hidden; }
+  #print-collection, #print-collection * { visibility: visible; }
+  #print-collection { display: block; position: absolute; top: 0; left: 0; width: 100%; padding: 24px; }
 }
