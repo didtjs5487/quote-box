@@ -47,9 +47,9 @@
 /* ----- 낙관(도장) ----- */
 .seal {
   display: inline-flex; align-items: center; justify-content: center; vertical-align: top;
-  width: 26px; height: 26px; margin: 4px 0 0 8px; border-radius: 4px;
+  width: 32px; height: 32px; margin: 3px 0 0 8px; border-radius: 4px;
   background: var(--seal); color: #FBEFE6;
-  font-family: var(--font-brush); font-size: 11.5px; line-height: 1; letter-spacing: 0; text-align: center;
+  font-family: var(--font-brush); font-size: 15px; line-height: .95; letter-spacing: 0; text-align: center;
   white-space: pre; box-shadow: inset 0 0 0 1.5px rgba(251,239,230,.55);
   transform: rotate(-7deg); mix-blend-mode: multiply;
   animation: sealStamp .55s cubic-bezier(.2,1.4,.4,1) .5s both; -webkit-text-stroke: 0;
@@ -63,9 +63,9 @@
 /* 즐겨찾기: 접힌 모서리 대신 붉은 낙관이 찍힌다 */
 .quote-card.is-fav::before { content: none; }
 .quote-card.is-fav::after {
-  content: "갈\A피"; white-space: pre; position: absolute; top: 12px; right: 14px;
+  content: "문장\A갈피"; white-space: pre; position: absolute; top: 12px; right: 14px;
   width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
-  background: var(--seal); color: #FBEFE6; font-family: var(--font-brush); font-size: 11px; line-height: 1; text-align: center;
+  background: var(--seal); color: #FBEFE6; font-family: var(--font-brush); font-size: 12px; line-height: .95; text-align: center;
   box-shadow: inset 0 0 0 1.5px rgba(251,239,230,.55); transform: rotate(-7deg); opacity: .92; pointer-events: none;
 }
 .quote-card.is-fav .quote-text { padding-right: 34px; }

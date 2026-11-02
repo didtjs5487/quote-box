@@ -340,8 +340,10 @@ function drawSeal(ctx, x, y, size) {
   ctx.strokeStyle = 'rgba(251,239,230,0.6)'; ctx.lineWidth = size * 0.04;
   ctx.strokeRect(-s + size * 0.07, -s + size * 0.07, size - size * 0.14, size - size * 0.14);
   ctx.fillStyle = '#FBEFE6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = `${size * 0.42}px "Nanum Brush Script", serif`;
-  ctx.fillText('갈', 0, -size * 0.2); ctx.fillText('피', 0, size * 0.2);
+  ctx.font = `${size * 0.44}px "Nanum Brush Script", serif`;
+  const o = size * 0.22; // 4글자가 2×2로 꽉 차게
+  ctx.fillText('문', -o, -o); ctx.fillText('장', o, -o);
+  ctx.fillText('갈', -o, o); ctx.fillText('피', o, o);
   ctx.restore();
 }
 
