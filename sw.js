@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quote-box-v12';
+const CACHE_NAME = 'quote-box-v13';
 const APP_SHELL = [
   './',
   './index.html',
@@ -34,20 +34,18 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// 네트워크 우선: 새 버전이 배포되면 바로 보이고, 오프라인일 때만 저장된 파일을 쓴다
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(event.request, { cache: 'no-cache' })
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
