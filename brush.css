@@ -1,0 +1,116 @@
+/* 붓글씨 느낌: 나눔 붓글씨체, 먹 번짐, 붓질 선, 낙관(도장), 계절 입자 */
+
+:root {
+  --font-brush: 'Nanum Brush Script', 'Fraunces', serif;
+  --seal: #B23A2E;
+  --brush-stroke: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M1 7 C24 3 62 9 104 5.5 S168 3.5 199 6 C172 8.5 140 7.5 106 9 S34 10.5 1 7Z'/%3E%3C/svg%3E");
+}
+
+/* ----- 제목 · 오늘의 한마디: 나눔 붓글씨 ----- */
+.brand { font-family: var(--font-brush); font-weight: 400; font-size: 40px; line-height: 1.1; letter-spacing: .02em; }
+.today-text { font-family: var(--font-brush); font-weight: 400; font-size: 33px; line-height: 1.35; letter-spacing: .02em; }
+#today-pick[data-size="sm"] .today-text { font-size: 26px; line-height: 1.38; }
+#today-pick[data-size="lg"] .today-text { font-size: 41px; line-height: 1.32; }
+#today-pick[data-size="xl"] .today-text { font-size: 49px; line-height: 1.3; }
+
+/* ----- 먹이 번지는 등장 효과 (오늘의 한마디가 바뀔 때) ----- */
+@keyframes inkBleed {
+  0%   { opacity: 0; filter: blur(9px); letter-spacing: .09em; text-shadow: 0 0 14px currentColor; }
+  55%  { opacity: .85; filter: blur(2.5px); text-shadow: 0 0 6px currentColor; }
+  100% { opacity: 1; filter: blur(0); letter-spacing: .02em; text-shadow: none; }
+}
+.today-text.ink-in { animation: inkBleed .85s var(--ease-settle) both; }
+
+/* ----- 붓질 밑줄 / 구분선 ----- */
+.brand { position: relative; display: inline-block; }
+.brand::after {
+  content: ""; position: absolute; left: 0; right: -6px; bottom: -3px; height: 9px;
+  background: var(--season-accent, var(--accent)); opacity: .55;
+  -webkit-mask: var(--brush-stroke) center / 100% 100% no-repeat; mask: var(--brush-stroke) center / 100% 100% no-repeat;
+  transform-origin: left center; animation: brushDraw .9s var(--ease-settle) .15s both;
+}
+.brush-rule {
+  height: 10px; margin: 2px 6px 14px; opacity: .45;
+  background: var(--season-accent, var(--accent));
+  -webkit-mask: var(--brush-stroke) center / 100% 100% no-repeat; mask: var(--brush-stroke) center / 100% 100% no-repeat;
+  transform-origin: left center; animation: brushDraw 1s var(--ease-settle) .3s both;
+}
+.block-title { position: relative; display: inline-block; padding-bottom: 8px; }
+.block-title::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 7px;
+  background: var(--season-accent, var(--accent)); opacity: .5;
+  -webkit-mask: var(--brush-stroke) center / 100% 100% no-repeat; mask: var(--brush-stroke) center / 100% 100% no-repeat;
+}
+@keyframes brushDraw { from { transform: scaleX(0); opacity: 0; } 20% { opacity: .6; } to { transform: scaleX(1); } }
+
+/* ----- 낙관(도장) ----- */
+.seal {
+  display: inline-flex; align-items: center; justify-content: center; vertical-align: top;
+  width: 26px; height: 26px; margin: 4px 0 0 8px; border-radius: 4px;
+  background: var(--seal); color: #FBEFE6;
+  font-family: var(--font-brush); font-size: 11.5px; line-height: 1; letter-spacing: 0; text-align: center;
+  white-space: pre; box-shadow: inset 0 0 0 1.5px rgba(251,239,230,.55);
+  transform: rotate(-7deg); mix-blend-mode: multiply;
+  animation: sealStamp .55s cubic-bezier(.2,1.4,.4,1) .5s both;
+}
+@keyframes sealStamp {
+  0%   { opacity: 0; transform: rotate(-14deg) scale(2.4); }
+  60%  { opacity: 1; transform: rotate(-7deg) scale(.92); }
+  100% { opacity: 1; transform: rotate(-7deg) scale(1); }
+}
+
+/* 즐겨찾기: 접힌 모서리 대신 붉은 낙관이 찍힌다 */
+.quote-card.is-fav::before { content: none; }
+.quote-card.is-fav::after {
+  content: "갈\A피"; white-space: pre; position: absolute; top: 12px; right: 14px;
+  width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  background: var(--seal); color: #FBEFE6; font-family: var(--font-brush); font-size: 11px; line-height: 1; text-align: center;
+  box-shadow: inset 0 0 0 1.5px rgba(251,239,230,.55); transform: rotate(-7deg); opacity: .92; pointer-events: none;
+}
+.quote-card.is-fav .quote-text { padding-right: 34px; }
+.quote-card.fold-in::after { animation: sealStamp .5s cubic-bezier(.2,1.4,.4,1); }
+
+/* ----- 계절 입자 (season.js) ----- */
+#season-fx { position: fixed; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; }
+#season-fx i {
+  position: absolute; top: -40px; left: var(--x); display: block;
+  width: var(--s); height: var(--s); opacity: 0;
+  animation: fxFall var(--d) linear var(--delay) infinite;
+}
+@keyframes fxFall {
+  0%   { transform: translate3d(0,-4vh,0) rotate(0); opacity: 0; }
+  8%   { opacity: var(--o, .7); }
+  50%  { transform: translate3d(var(--sway), 52vh, 0) rotate(var(--rot)); }
+  92%  { opacity: var(--o, .7); }
+  100% { transform: translate3d(calc(var(--sway) * -.4), 108vh, 0) rotate(calc(var(--rot) * 1.6)); opacity: 0; }
+}
+/* 봄: 벚꽃잎 */
+[data-season="spring"] #season-fx i {
+  background: linear-gradient(135deg, #FFE3EA, #F4A9BC); border-radius: 100% 0 100% 0; --o: .75;
+}
+/* 여름: 가는 장맛비 */
+[data-season="summer"] #season-fx i {
+  width: 1.6px; height: calc(var(--s) * 2.2); border-radius: 2px; --rot: 0deg; --sway: -22px; --o: .7;
+  background: linear-gradient(180deg, rgba(90,125,125,0), rgba(90,125,125,.8));
+  animation-duration: calc(var(--d) * .22); transform: rotate(8deg);
+}
+@keyframes rainFall {
+  0%   { transform: translate3d(0,-6vh,0) rotate(8deg); opacity: 0; }
+  10%  { opacity: var(--o); }
+  100% { transform: translate3d(-24px,108vh,0) rotate(8deg); opacity: 0; }
+}
+[data-season="summer"] #season-fx i { animation-name: rainFall; animation-timing-function: linear; }
+/* 가을: 단풍잎 */
+[data-season="autumn"] #season-fx i {
+  background: linear-gradient(135deg, #C0392B, #8E1F2B); border-radius: 0 100% 0 100%; --o: .8;
+}
+[data-season="autumn"] #season-fx i:nth-child(3n) { background: linear-gradient(135deg, #D98A3A, #B5601F); }
+/* 겨울: 눈송이 */
+[data-season="winter"] #season-fx i {
+  border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(140,155,175,.35), 0 1px 4px rgba(120,135,155,.3); --o: .95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today-text.ink-in, .brand::after, .brush-rule, .seal, .quote-card.fold-in::after { animation: none; }
+  #season-fx { display: none; }
+}

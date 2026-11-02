@@ -327,6 +327,10 @@ function pickToday(crossfade) {
   const applyText = () => {
     textEl.textContent = pick.text;
     sourceEl.textContent = pick.source ? `— ${pick.source}` : '';
+    // 먹이 번지듯 나타나는 효과를 매번 다시 재생
+    textEl.classList.remove('ink-in');
+    void textEl.offsetWidth;
+    textEl.classList.add('ink-in');
   };
   if (!crossfade) { applyText(); return; }
   textEl.classList.add('fading');
