@@ -1,8 +1,9 @@
-const CACHE_NAME = 'quote-box-v9';
+const CACHE_NAME = 'quote-box-v10';
 const APP_SHELL = [
   './',
   './index.html',
   './style.css',
+  './season.css',
   './app.js',
   './qrcode.js',
   './firebase-config.js',
