@@ -418,6 +418,8 @@ async function renderQuoteImage(q) {
   // 위쪽 서명
   ctx.font = `52px ${brush}`; ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(36,31,27,0.55)';
+  ctx.strokeStyle = 'rgba(36,31,27,0.55)'; ctx.lineWidth = 2.4; ctx.lineJoin = 'round';
+  ctx.strokeText('문장갈피', W / 2, 130);
   ctx.fillText('문장갈피', W / 2, 130);
   ctx.textAlign = 'left';
 

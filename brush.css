@@ -7,7 +7,8 @@
 }
 
 /* ----- 제목 · 오늘의 한마디: 나눔 붓글씨 ----- */
-.brand { font-family: var(--font-brush); font-weight: 400; font-size: 40px; line-height: 1.1; letter-spacing: .02em; }
+.brand { font-family: var(--font-brush); font-weight: 400; font-size: 40px; line-height: 1.1; letter-spacing: .02em;
+  -webkit-text-stroke: 1.6px currentColor; paint-order: stroke fill; } /* 붓글씨체는 굵기가 하나뿐이라 외곽선으로 굵게 */
 .today-text { font-family: var(--font-brush); font-weight: 400; font-size: 33px; line-height: 1.35; letter-spacing: .02em; }
 #today-pick[data-size="sm"] .today-text { font-size: 26px; line-height: 1.38; }
 #today-pick[data-size="lg"] .today-text { font-size: 41px; line-height: 1.32; }
@@ -51,7 +52,7 @@
   font-family: var(--font-brush); font-size: 11.5px; line-height: 1; letter-spacing: 0; text-align: center;
   white-space: pre; box-shadow: inset 0 0 0 1.5px rgba(251,239,230,.55);
   transform: rotate(-7deg); mix-blend-mode: multiply;
-  animation: sealStamp .55s cubic-bezier(.2,1.4,.4,1) .5s both;
+  animation: sealStamp .55s cubic-bezier(.2,1.4,.4,1) .5s both; -webkit-text-stroke: 0;
 }
 @keyframes sealStamp {
   0%   { opacity: 0; transform: rotate(-14deg) scale(2.4); }
