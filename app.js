@@ -229,53 +229,201 @@ function wrapCanvasText(ctx, text, maxWidth) {
   return lines;
 }
 
+/* ===== 캘리그라피 작품 느낌의 공유 이미지: 한지 질감 + 붓글씨 + 계절 수묵 + 낙관 ===== */
+function seededRandom(seedStr) {
+  let h = 2166136261;
+  for (let i = 0; i < seedStr.length; i++) { h ^= seedStr.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return function () {
+    h += 0x6D2B79F5; let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hexToRgba(hex, a) {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex.trim());
+  if (!m) return `rgba(193,84,74,${a})`;
+  return `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})`;
+}
+
+function loadImageFromCssVar(varName) {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  const m = /^url\(["']?(.*?)["']?\)$/.exec(raw);
+  if (!m) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = m[1];
+  });
+}
+
+function drawHanjiPaper(ctx, W, H, paper, rand) {
+  ctx.fillStyle = paper;
+  ctx.fillRect(0, 0, W, H);
+  // 먹이 옅게 번진 얼룩
+  for (let i = 0; i < 6; i++) {
+    const x = rand() * W, y = rand() * H, r = 260 + rand() * 360;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(70,60,50,0.05)');
+    g.addColorStop(1, 'rgba(70,60,50,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  // 한지 섬유
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 900; i++) {
+    const x = rand() * W, y = rand() * H, len = 14 + rand() * 46, a = rand() * Math.PI;
+    ctx.strokeStyle = rand() < 0.5 ? 'rgba(255,255,255,0.55)' : 'rgba(120,100,75,0.10)';
+    ctx.lineWidth = 0.6 + rand() * 1.1;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + Math.cos(a) * len * 0.5 + rand() * 8, y + Math.sin(a) * len * 0.5 + rand() * 8,
+                         x + Math.cos(a) * len, y + Math.sin(a) * len);
+    ctx.stroke();
+  }
+  // 잔 점
+  for (let i = 0; i < 700; i++) {
+    ctx.fillStyle = `rgba(90,75,55,${0.03 + rand() * 0.07})`;
+    ctx.fillRect(rand() * W, rand() * H, 1 + rand() * 2, 1 + rand() * 2);
+  }
+  // 가장자리 비네트
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.8);
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(1, 'rgba(90,70,45,0.16)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+// 글자마다 살짝 흔들리고 기울어진 붓글씨 한 줄 (가운데 정렬)
+function drawBrushLine(ctx, line, cx, y, rand, color) {
+  const chars = [...line];
+  const widths = chars.map((ch) => ctx.measureText(ch).width);
+  const total = widths.reduce((a, b) => a + b, 0);
+  let x = cx - total / 2;
+  chars.forEach((ch, i) => {
+    const w = widths[i];
+    ctx.save();
+    ctx.translate(x + w / 2, y + (rand() - 0.5) * 6);
+    ctx.rotate((rand() - 0.5) * 0.045);
+    // 먹이 번진 가장자리 → 선명한 획
+    ctx.shadowColor = 'rgba(35,28,22,0.38)'; ctx.shadowBlur = 9;
+    ctx.fillStyle = color; ctx.fillText(ch, -w / 2, 0);
+    ctx.shadowBlur = 0; ctx.fillText(ch, -w / 2, 0);
+    ctx.restore();
+    x += w;
+  });
+}
+
+function drawBrushStroke(ctx, x, y, w, color) {
+  ctx.save();
+  ctx.translate(x, y); ctx.scale(w / 200, 1.6);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(1, 7);
+  ctx.bezierCurveTo(24, 3, 62, 9, 104, 5.5);
+  ctx.bezierCurveTo(140, 2.5, 168, 3.5, 199, 6);
+  ctx.bezierCurveTo(172, 8.5, 140, 7.5, 106, 9);
+  ctx.bezierCurveTo(70, 10.5, 34, 10.5, 1, 7);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawSeal(ctx, x, y, size) {
+  ctx.save();
+  ctx.translate(x + size / 2, y + size / 2); ctx.rotate(-0.12);
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = '#B23A2E';
+  const r = size * 0.1, s = size / 2;
+  ctx.beginPath();
+  ctx.moveTo(-s + r, -s); ctx.arcTo(s, -s, s, s, r); ctx.arcTo(s, s, -s, s, r);
+  ctx.arcTo(-s, s, -s, -s, r); ctx.arcTo(-s, -s, s, -s, r); ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.strokeStyle = 'rgba(251,239,230,0.6)'; ctx.lineWidth = size * 0.04;
+  ctx.strokeRect(-s + size * 0.07, -s + size * 0.07, size - size * 0.14, size - size * 0.14);
+  ctx.fillStyle = '#FBEFE6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `${size * 0.42}px "Nanum Brush Script", serif`;
+  ctx.fillText('갈', 0, -size * 0.2); ctx.fillText('피', 0, size * 0.2);
+  ctx.restore();
+}
+
 async function renderQuoteImage(q) {
+  const brush = '"Nanum Brush Script", "Fraunces", serif';
+  if (document.fonts && document.fonts.load) {
+    try { await document.fonts.load('64px "Nanum Brush Script"', q.text + (q.source || '') + '문장갈피'); } catch (e) { /* ignore */ }
+  }
   if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) { /* ignore */ } }
   const W = 1080, H = 1350;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
+  const rand = seededRandom(String(q.id) + q.text);
+  const cs = getComputedStyle(document.documentElement);
+  const paper = cs.getPropertyValue('--paper').trim() || '#F7F3EC';
+  const accent = cs.getPropertyValue('--season-accent').trim() || '#C1544A';
+  const ink = '#241F1B';
 
-  ctx.fillStyle = '#2B2A28';
-  ctx.fillRect(0, 0, W, H);
+  drawHanjiPaper(ctx, W, H, paper, rand);
 
-  const padX = 90;
-  const maxWidth = W - padX * 2;
+  // 계절 수묵화 (왼쪽 아래) — 가장자리를 한지에 스며들듯 흐리게
+  const art = await loadImageFromCssVar('--season-art');
+  if (art) {
+    const aw = 700, ah = Math.round(aw * art.naturalHeight / art.naturalWidth);
+    const layer = document.createElement('canvas');
+    layer.width = aw; layer.height = ah;
+    const lc = layer.getContext('2d');
+    lc.drawImage(art, 0, 0, aw, ah);
+    lc.globalCompositeOperation = 'destination-in';
+    const gx = lc.createLinearGradient(0, 0, aw, 0);
+    gx.addColorStop(0, 'rgba(0,0,0,0)'); gx.addColorStop(0.22, '#000'); gx.addColorStop(0.78, '#000'); gx.addColorStop(1, 'rgba(0,0,0,0)');
+    lc.fillStyle = gx; lc.fillRect(0, 0, aw, ah);
+    const gy = lc.createLinearGradient(0, 0, 0, ah);
+    gy.addColorStop(0, 'rgba(0,0,0,0)'); gy.addColorStop(0.24, '#000'); gy.addColorStop(0.82, '#000'); gy.addColorStop(1, 'rgba(0,0,0,0)');
+    lc.fillStyle = gy; lc.fillRect(0, 0, aw, ah);
+    ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = 0.85;
+    ctx.drawImage(layer, -50, H - ah + 10); ctx.restore();
+  }
 
-  ctx.fillStyle = '#C9A98F';
-  ctx.font = '600 26px "IBM Plex Mono", monospace';
-  ctx.fillText('오늘의 한마디', padX, 110);
-
-  const textTop = 200;
-  const textBottomLimit = H - 260;
-  let fontSize = 64;
-  let lines = [];
-  let lineHeight = 0;
-  while (fontSize > 28) {
-    ctx.font = `500 ${fontSize}px Fraunces, serif`;
+  // 붓글씨 문장
+  ctx.textBaseline = 'alphabetic';
+  const maxWidth = W - 300;
+  const textTop = 230, textBottomLimit = H - 400;
+  let fontSize = 120, lines = [], lineHeight = 0;
+  while (fontSize > 40) {
+    ctx.font = `${fontSize}px ${brush}`;
     lines = wrapCanvasText(ctx, q.text, maxWidth);
-    lineHeight = fontSize * 1.42;
+    lineHeight = fontSize * 1.38;
     if (lines.length * lineHeight <= (textBottomLimit - textTop)) break;
-    fontSize -= 2;
+    fontSize -= 4;
   }
-  ctx.font = `500 ${fontSize}px Fraunces, serif`;
-  ctx.fillStyle = '#FAF6EE';
+  ctx.font = `${fontSize}px ${brush}`;
   const blockHeight = lines.length * lineHeight;
-  let y = textTop + Math.max(0, (textBottomLimit - textTop - blockHeight) / 2) + fontSize * 0.9;
-  lines.forEach((line) => {
-    ctx.fillText(line, padX, y);
-    y += lineHeight;
-  });
+  const top = textTop + Math.max(0, (textBottomLimit - textTop - blockHeight) / 2);
+  let y = top + fontSize * 0.95;
+  lines.forEach((line) => { drawBrushLine(ctx, line, W / 2, y, rand, ink); y += lineHeight; });
+  const blockBottom = top + blockHeight;
 
+  // 붓질 한 획
+  drawBrushStroke(ctx, W / 2 - 180, blockBottom + 14, 360, hexToRgba(accent, 0.55));
+
+  // 출처(낙관 옆 서명처럼 오른쪽 정렬)
+  const sealSize = 104;
+  const sealX = W - 150 - sealSize, sealY = blockBottom + 80;
   if (q.source) {
-    ctx.font = '400 30px "Work Sans", sans-serif';
-    ctx.fillStyle = '#C9A98F';
-    ctx.fillText(`— ${q.source}`, padX, H - 150);
+    ctx.font = `46px ${brush}`;
+    ctx.fillStyle = 'rgba(36,31,27,0.82)'; ctx.textAlign = 'right';
+    ctx.fillText(`— ${q.source}`, sealX - 24, sealY + sealSize * 0.62);
+    ctx.textAlign = 'left';
   }
+  drawSeal(ctx, sealX, sealY, sealSize);
 
-  ctx.font = '600 22px "IBM Plex Mono", monospace';
-  ctx.fillStyle = 'rgba(250,246,238,0.45)';
-  ctx.fillText('문장갈피에서', padX, H - 70);
+  // 위쪽 서명
+  ctx.font = `52px ${brush}`; ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(36,31,27,0.55)';
+  ctx.fillText('문장갈피', W / 2, 130);
+  ctx.textAlign = 'left';
+
+  // 얇은 테두리
+  ctx.strokeStyle = 'rgba(36,31,27,0.22)'; ctx.lineWidth = 2;
+  ctx.strokeRect(46, 46, W - 92, H - 92);
 
   return canvas;
 }

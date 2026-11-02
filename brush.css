@@ -79,10 +79,11 @@
 }
 @keyframes fxFall {
   0%   { transform: translate3d(0,-4vh,0) rotate(0); opacity: 0; }
-  8%   { opacity: var(--o, .7); }
-  50%  { transform: translate3d(var(--sway), 52vh, 0) rotate(var(--rot)); }
-  92%  { opacity: var(--o, .7); }
-  100% { transform: translate3d(calc(var(--sway) * -.4), 108vh, 0) rotate(calc(var(--rot) * 1.6)); opacity: 0; }
+  4%   { opacity: var(--o, .7); }
+  22%  { transform: translate3d(var(--sway), 52vh, 0) rotate(var(--rot)); }
+  42%  { opacity: var(--o, .7); }
+  45%  { transform: translate3d(calc(var(--sway) * -.4), 108vh, 0) rotate(calc(var(--rot) * 1.6)); opacity: 0; }
+  100% { transform: translate3d(calc(var(--sway) * -.4), 108vh, 0); opacity: 0; }
 }
 /* 봄: 벚꽃잎 */
 [data-season="spring"] #season-fx i {
@@ -92,11 +93,12 @@
 [data-season="summer"] #season-fx i {
   width: 1.6px; height: calc(var(--s) * 2.2); border-radius: 2px; --rot: 0deg; --sway: -22px; --o: .7;
   background: linear-gradient(180deg, rgba(90,125,125,0), rgba(90,125,125,.8));
-  animation-duration: calc(var(--d) * .22); transform: rotate(8deg);
+  transform: rotate(8deg);
 }
 @keyframes rainFall {
   0%   { transform: translate3d(0,-6vh,0) rotate(8deg); opacity: 0; }
-  10%  { opacity: var(--o); }
+  3%   { opacity: var(--o); }
+  8%   { transform: translate3d(-24px,108vh,0) rotate(8deg); opacity: 0; }
   100% { transform: translate3d(-24px,108vh,0) rotate(8deg); opacity: 0; }
 }
 [data-season="summer"] #season-fx i { animation-name: rainFall; animation-timing-function: linear; }
