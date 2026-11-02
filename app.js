@@ -440,13 +440,24 @@ async function renderQuoteImage(q) {
   }
   drawSeal(ctx, sealX, sealY, sealSize);
 
-  // 위쪽 서명
-  ctx.font = `52px ${brush}`; ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(36,31,27,0.55)';
-  ctx.strokeStyle = 'rgba(36,31,27,0.55)'; ctx.lineWidth = 2.4; ctx.lineJoin = 'round';
-  ctx.strokeText('문장갈피', W / 2, 130);
-  ctx.fillText('문장갈피', W / 2, 130);
-  ctx.textAlign = 'left';
+  // 위쪽 제목: 직접 쓴 붓글씨 이미지
+  const titleImg = await new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => resolve(null);
+    im.src = 'art/title.png';
+  });
+  if (titleImg) {
+    const tw = 280, th = Math.round(tw * titleImg.naturalHeight / titleImg.naturalWidth);
+    ctx.save(); ctx.globalAlpha = 0.9;
+    ctx.drawImage(titleImg, (W - tw) / 2, 72, tw, th);
+    ctx.restore();
+  } else {
+    ctx.font = `52px ${brush}`; ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(36,31,27,0.55)';
+    ctx.fillText('문장갈피', W / 2, 130);
+    ctx.textAlign = 'left';
+  }
 
   // 얇은 테두리
   ctx.strokeStyle = 'rgba(36,31,27,0.22)'; ctx.lineWidth = 2;

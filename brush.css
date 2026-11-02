@@ -146,3 +146,9 @@ body { font-family: var(--font-body); }
 /* 수정 창: 취소/저장 버튼을 나란히 */
 .modal-actions-right { display: flex; gap: 8px; }
 .modal-card { outline: none; }
+
+/* ----- 제목: 직접 쓴 붓글씨 이미지 ----- */
+.brand { display: inline-flex; align-items: flex-end; margin: 0 0 2px; line-height: 1; }
+.brand::after { content: none; }
+.brand-img { display: block; height: 76px; width: auto; }
+.brand .seal { margin: 0 0 8px 6px; }
