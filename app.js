@@ -347,6 +347,19 @@ function drawSeal(ctx, x, y, size) {
   ctx.restore();
 }
 
+// 글씨 뒤를 한지색으로 은은하게 비워, 배경 그림과 겹쳐도 글자가 또렷하게 읽히게 한다
+function drawPaperGlow(ctx, cx, cy, rx, ry, paper, alpha) {
+  ctx.save();
+  ctx.translate(cx, cy); ctx.scale(1, ry / rx);
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  g.addColorStop(0, hexToRgba(paper, alpha));
+  g.addColorStop(0.62, hexToRgba(paper, alpha * 0.85));
+  g.addColorStop(1, hexToRgba(paper, 0));
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0, 0, rx, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
 async function renderQuoteImage(q) {
   const brush = '"Nanum Brush Script", "Fraunces", serif';
   if (document.fonts && document.fonts.load) {
@@ -399,6 +412,8 @@ async function renderQuoteImage(q) {
   ctx.font = `${fontSize}px ${brush}`;
   const blockHeight = lines.length * lineHeight;
   const top = textTop + Math.max(0, (textBottomLimit - textTop - blockHeight) / 2);
+  const lineW = Math.max.apply(null, lines.map((l) => ctx.measureText(l).width));
+  drawPaperGlow(ctx, W / 2, top + blockHeight / 2, lineW / 2 + 130, blockHeight / 2 + 90, paper, 0.9);
   let y = top + fontSize * 0.95;
   lines.forEach((line) => { drawBrushLine(ctx, line, W / 2, y, rand, ink); y += lineHeight; });
   const blockBottom = top + blockHeight;
@@ -411,6 +426,8 @@ async function renderQuoteImage(q) {
   const sealX = W - 150 - sealSize, sealY = blockBottom + 80;
   if (q.source) {
     ctx.font = `46px ${brush}`;
+    const srcW = ctx.measureText(`— ${q.source}`).width;
+    drawPaperGlow(ctx, sealX - 24 - srcW / 2, sealY + sealSize * 0.5, srcW / 2 + 70, 60, paper, 0.85);
     ctx.fillStyle = 'rgba(36,31,27,0.82)'; ctx.textAlign = 'right';
     ctx.fillText(`— ${q.source}`, sealX - 24, sealY + sealSize * 0.62);
     ctx.textAlign = 'left';
