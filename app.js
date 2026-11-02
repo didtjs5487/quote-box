@@ -615,9 +615,9 @@ function renderQuotes() {
       <div class="quote-foot">
         <span class="quote-date">${formatDate(q.createdAt)}</span>
         <div class="quote-actions">
-          <button class="quote-image-btn" title="이미지로 공유">🖼</button>
-          <button class="quote-edit-btn" title="문장 수정">✎ 수정</button>
-          <button class="quote-fav-btn" title="즐겨찾기">${q.favorite ? '⭐' : '☆'}</button>
+          <button class="quote-image-btn" title="이미지로 공유" aria-label="이미지로 공유"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5l5-5 3.5 3.5 2.5-2.5 4 4"/></svg></button>
+          <button class="quote-edit-btn" title="문장 수정" aria-label="문장 수정"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5l.9-3.9L16.3 4.7a2 2 0 0 1 2.8 0l.2.2a2 2 0 0 1 0 2.8L8.4 18.6z"/><path d="M14.5 6.5l3 3"/></svg></button>
+          <button class="quote-fav-btn${q.favorite ? ' on' : ''}" title="즐겨찾기" aria-label="즐겨찾기" aria-pressed="${q.favorite ? 'true' : 'false'}"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.9l-5.1 2.6 1-5.7-4.1-4 5.7-.8z"/></svg></button>
         </div>
       </div>
     `;

@@ -117,3 +117,28 @@
   .today-text.ink-in, .brand::after, .brush-rule, .seal, .quote-card.fold-in::after { animation: none; }
   #season-fx { display: none; }
 }
+
+/* ----- 문장 카드 정돈: 글꼴 통일 + 같은 모양의 아이콘 버튼 ----- */
+:root {
+  --font-display: 'Gowun Batang', 'Fraunces', serif;
+  --font-body: 'Gowun Dodum', 'Work Sans', sans-serif;
+}
+body { font-family: var(--font-body); }
+.quote-text { font-size: 18px; line-height: 1.75; color: var(--ink); }
+.quote-source { font-size: 13.5px; }
+.quote-date, .quote-note-date, .today-label {
+  font-family: var(--font-body); font-variant-numeric: tabular-nums; letter-spacing: .02em;
+}
+.quote-date { font-size: 12.5px; }
+
+.quote-image-btn, .quote-edit-btn, .quote-fav-btn {
+  background: none; border: none; border-radius: 50%; padding: 0; margin: 0;
+  width: 44px; height: 44px; min-height: 44px; font-size: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink-soft); cursor: pointer;
+  transition: background .15s ease, color .15s ease, transform .15s var(--ease-settle);
+}
+.quote-image-btn:hover, .quote-edit-btn:hover, .quote-fav-btn:hover { background: var(--paper); color: var(--ink); }
+.quote-image-btn:active, .quote-edit-btn:active, .quote-fav-btn:active { transform: scale(0.9); }
+.quote-fav-btn.on { color: var(--seal); }
+.quote-fav-btn.on svg { fill: currentColor; }
