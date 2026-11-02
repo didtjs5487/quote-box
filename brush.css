@@ -142,3 +142,7 @@ body { font-family: var(--font-body); }
 .quote-image-btn:active, .quote-edit-btn:active, .quote-fav-btn:active { transform: scale(0.9); }
 .quote-fav-btn.on { color: var(--seal); }
 .quote-fav-btn.on svg { fill: currentColor; }
+
+/* 수정 창: 취소/저장 버튼을 나란히 */
+.modal-actions-right { display: flex; gap: 8px; }
+.modal-card { outline: none; }

@@ -138,11 +138,17 @@ function focusableElements(el) {
   return Array.from(el.querySelectorAll(FOCUSABLE_SELECTOR))
     .filter(node => node.offsetParent !== null && !node.disabled);
 }
-function openModal(el) {
+function openModal(el, opts) {
   modalReturnFocus.set(el, document.activeElement);
   el.classList.remove('hidden');
   requestAnimationFrame(() => {
     el.classList.add('is-open');
+    if (opts && opts.autofocus === false) {
+      // 실수로 열렸을 때 키보드가 바로 올라오지 않게, 입력칸 대신 창 자체에 포커스
+      const card = el.querySelector('.modal-card');
+      if (card) { card.setAttribute('tabindex', '-1'); card.focus({ preventScroll: true }); }
+      return;
+    }
     const visible = focusableElements(el);
     const primary = visible.find(n => n.tagName === 'TEXTAREA' || n.tagName === 'INPUT' || n.tagName === 'SELECT');
     (primary || visible[0])?.focus();
@@ -879,10 +885,11 @@ function openEditModal(id) {
   document.getElementById('edit-source').value = q.source || '';
   document.getElementById('edit-link').value = q.link || '';
   document.getElementById('edit-tags').value = (q.tags || []).join(', ');
-  openModal(editModal);
+  openModal(editModal, { autofocus: false });
 }
 function closeEditModal() { closeModal(editModal); state.editingId = null; }
 document.getElementById('modal-edit-close').addEventListener('click', closeEditModal);
+document.getElementById('btn-cancel-edit').addEventListener('click', closeEditModal);
 editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
 
 document.getElementById('form-quote-edit').addEventListener('submit', (e) => {
