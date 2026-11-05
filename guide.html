@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>문장갈피 사용설명서</title>
+<meta name="theme-color" content="#2B2A28">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Nanum+Brush+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="season.css">
+<script>
+  // 앱과 같은 계절 배경 (봄 3~5월 / 여름 6~8월 / 가을 9~11월 / 겨울 12~2월)
+  (function () {
+    var m = new Date().getMonth() + 1;
+    var s = m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter';
+    document.documentElement.setAttribute('data-season', s);
+  })();
+</script>
+<style>
+  :root { --ink: #2B2A28; --ink-soft: #6B6457; --card: #FFFFFF; --border: #E8E1D3; --seal: #B23A2E; --gold-text: #7D5E1B; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { color: var(--ink); font-family: 'Gowun Dodum', sans-serif; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 18px 70px; }
+  .back { display: inline-block; font-size: 14px; color: var(--ink-soft); text-decoration: none; padding: 8px 0; }
+  .hero { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0 4px; }
+  .hero img { height: 84px; width: auto; display: block; }
+  .stamp {
+    display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin-bottom: 8px;
+    background: var(--seal); color: #FBEFE6; border-radius: 4px; transform: rotate(-7deg); white-space: pre;
+    font-family: 'Nanum Brush Script', serif; font-size: 15px; line-height: .95; text-align: center;
+    box-shadow: inset 0 0 0 1.5px rgba(251,239,230,.55);
+  }
+  h1 { font-family: 'Gowun Batang', serif; font-size: 22px; margin: 4px 0 6px; }
+  .lead { color: var(--ink-soft); margin: 0 0 22px; font-size: 15.5px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+  .toc a { font-size: 13.5px; color: var(--ink); text-decoration: none; background: rgba(255,255,255,.85); border: 1px solid var(--border); border-radius: 999px; padding: 7px 13px; }
+  section { background: rgba(255,255,255,.92); border: 1px solid var(--border); border-radius: 18px; padding: 20px 20px 16px; margin: 0 0 16px; box-shadow: 0 3px 10px rgba(43,42,40,.06); }
+  h2 { font-family: 'Gowun Batang', serif; font-size: 19px; margin: 0 0 10px; display: flex; align-items: center; gap: 10px; }
+  .no { flex: none; width: 26px; height: 26px; border-radius: 4px; background: var(--seal); color: #FBEFE6; font: 700 13px 'Gowun Dodum', sans-serif; display: inline-flex; align-items: center; justify-content: center; transform: rotate(-6deg); }
+  p { margin: 0 0 10px; font-size: 15.5px; }
+  ol, ul { margin: 0 0 10px; padding-left: 22px; font-size: 15.5px; }
+  li { margin: 0 0 5px; }
+  b, strong { font-weight: 700; }
+  .tip { background: #FBF1DC; border-radius: 12px; padding: 11px 14px; font-size: 14.5px; color: #5d4713; margin: 12px 0 6px; }
+  .warn { background: #F5E2DE; border-radius: 12px; padding: 11px 14px; font-size: 14.5px; color: #7A3025; margin: 12px 0 6px; }
+  .icons { display: grid; grid-template-columns: 38px 1fr; gap: 8px 12px; align-items: center; margin: 4px 0 10px; font-size: 15.5px; }
+  .icons svg { width: 26px; height: 26px; color: var(--ink-soft); }
+  .icons .on svg { color: var(--seal); }
+  .icons .on svg { fill: currentColor; }
+  details { border-top: 1px solid var(--border); padding: 10px 0; }
+  details:first-of-type { border-top: 0; }
+  summary { cursor: pointer; font-weight: 700; font-size: 15.5px; }
+  details p { margin: 8px 0 0; font-size: 15px; color: #4a463f; }
+  .foot { text-align: center; color: var(--ink-soft); font-size: 13px; margin-top: 26px; }
+  a.link { color: #8F3C2E; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">← 문장갈피로 돌아가기</a>
+
+  <div class="hero">
+    <img src="art/title.png" alt="문장갈피">
+    <span class="stamp" aria-hidden="true">문장
+갈피</span>
+  </div>
+  <h1>사용설명서</h1>
+  <p class="lead">마음에 남는 문장을 태그로 모아두고, 언제든 꺼내 보고, 붓글씨 카드 이미지로 만들어 나눌 수 있는 앱이에요. 로그인도 회원가입도 없어요.</p>
+
+  <nav class="toc" aria-label="목차">
+    <a href="#s1">시작하기</a><a href="#s2">문장 담기</a><a href="#s3">오늘의 한마디</a><a href="#s4">찾기·정리</a>
+    <a href="#s5">카드 버튼</a><a href="#s6">카드 이미지</a><a href="#s7">백업</a><a href="#s8">그 밖의 기능</a><a href="#s9">자주 묻는 질문</a>
+  </nav>
+
+  <section id="s1">
+    <h2><span class="no">1</span>시작하기</h2>
+    <p>주소를 열면 바로 쓸 수 있어요. 설치는 선택이지만, 앱처럼 쓰려면 홈 화면에 추가해 두면 편해요.</p>
+    <ul>
+      <li><b>안드로이드(크롬)</b>: 주소창 오른쪽 ⋮ → <b>홈 화면에 추가</b> 또는 <b>앱 설치</b></li>
+      <li><b>아이폰(사파리)</b>: 아래 공유 버튼 → <b>홈 화면에 추가</b></li>
+      <li><b>PC</b>: 크롬 주소창 오른쪽의 설치 아이콘</li>
+    </ul>
+    <div class="tip">계절에 맞춰 배경이 바뀌어요. 봄 3~5월 · 여름 6~8월 · 가을 9~11월 · 겨울 12~2월이에요.</div>
+  </section>
+
+  <section id="s2">
+    <h2><span class="no">2</span>문장 담기</h2>
+    <ol>
+      <li>오른쪽 아래의 <b>＋</b> 버튼을 누르면 <b>새 문장 담기</b> 칸으로 이동해요.</li>
+      <li><b>문장</b>만 적어도 저장돼요. <b>출처</b>(영화, 책, 사람 이름), <b>링크</b>(영상·기사 주소), <b>느낀 점</b>, <b>태그</b>는 선택이에요.</li>
+      <li><b>담아두기</b>를 누르면 목록 맨 위에 카드가 생겨요.</li>
+    </ol>
+    <p><b>태그</b>는 쉼표로 구분해 마음대로 붙여요. 예: <i>명언, 위로, 말씀</i>. 태그가 쌓이면 위쪽에 필터 버튼으로 나타나요.</p>
+  </section>
+
+  <section id="s3">
+    <h2><span class="no">3</span>오늘의 한마디</h2>
+    <p>맨 위의 검은 카드는 모아둔 문장 중 하나를 골라 보여줘요. 글자가 먹물처럼 번지며 나타나요.</p>
+    <ul>
+      <li><b>🎲</b> 다른 문장으로 바꿔요.</li>
+      <li><b>− / +</b> 글씨 크기를 4단계로 조절해요. 고른 크기는 기억돼요.</li>
+    </ul>
+  </section>
+
+  <section id="s4">
+    <h2><span class="no">4</span>찾기·정리</h2>
+    <ul>
+      <li><b>검색창</b>에 문장, 출처, 태그, 느낀 점의 일부를 적으면 찾아줘요.</li>
+      <li><b>↕️</b> 최신순 · 오래된순 · 랜덤 순서를 바꿔요.</li>
+      <li><b>전체 / ⭐ 즐겨찾기 / 🔥 자주 보는</b> 필터로 모아봐요. 오늘의 한마디로 자주 뽑힌 문장이 <b>자주 보는</b>이에요.</li>
+      <li><b>#태그</b> 버튼이나 카드의 태그를 누르면 같은 주제끼리 모아봐요.</li>
+      <li>오른쪽 위 <b>📊</b>에서 지금까지 모은 문장 수, 월별 기록 등을 볼 수 있어요.</li>
+    </ul>
+  </section>
+
+  <section id="s5">
+    <h2><span class="no">5</span>카드 버튼과 느낀 점 기록</h2>
+    <p>카드 아래쪽 세 개의 아이콘이에요.</p>
+    <div class="icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5l5-5 3.5 3.5 2.5-2.5 4 4"/></svg>
+      <span><b>이미지로 공유</b> — 붓글씨 카드 이미지를 만들어요.</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5l.9-3.9L16.3 4.7a2 2 0 0 1 2.8 0l.2.2a2 2 0 0 1 0 2.8L8.4 18.6z"/><path d="M14.5 6.5l3 3"/></svg>
+      <span><b>수정</b> — 문장·출처·링크·태그를 고치거나 삭제해요. 잘못 열렸다면 <b>취소</b>를 누르세요.</span>
+      <span class="on"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.8l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.9l-5.1 2.6 1-5.7-4.1-4 5.7-.8z"/></svg></span>
+      <span><b>즐겨찾기</b> — 누르면 카드 오른쪽 위에 붉은 낙관이 찍혀요.</span>
+    </div>
+    <p><b>느낀 점 남기기</b>: 카드의 <b>문장 글씨</b>를 누르면 그 자리에서 느낀 점을 적을 수 있어요. 댓글처럼 여러 개를 이어서 남길 수 있고, 날짜가 함께 기록돼요. 기록을 누르면 고치고, <b>✕</b>를 누르면 지워요.</p>
+  </section>
+
+  <section id="s6">
+    <h2><span class="no">6</span>카드 이미지 만들기</h2>
+    <p>카드의 <b>이미지 아이콘</b>을 누르면 한지 위에 붓글씨로 쓴 문장 카드가 만들어져요. 그때의 계절 수묵화가 배경에 깔리고, 위에는 <b>문장갈피</b> 제목, 아래에는 출처와 붉은 낙관이 들어가요.</p>
+    <ul>
+      <li>휴대폰에서는 공유 창이 바로 떠요. 카카오톡, 인스타그램 등으로 보내면 돼요.</li>
+      <li>공유 창이 안 뜨는 환경에서는 이미지 파일로 저장돼요.</li>
+    </ul>
+  </section>
+
+  <section id="s7">
+    <h2><span class="no">7</span>백업과 옮기기</h2>
+    <p>문장은 <b>이 기기의 브라우저 안에만</b> 저장돼요. 브라우저 데이터를 지우거나 앱을 지우면 함께 사라지니, 꼭 백업해 두세요. 오른쪽 위 <b>⚙️</b>에서 해요.</p>
+    <p><b>방법 A. 파일로 백업</b></p>
+    <ol>
+      <li>⚙️ → <b>JSON으로 내보내기</b>로 파일을 저장해요.</li>
+      <li>새 기기나 새로 설치한 앱에서 ⚙️ → <b>JSON 파일 가져오기</b>를 눌러 그 파일을 골라요.</li>
+    </ol>
+    <p><b>방법 B. 백업 암호로 자동 백업</b></p>
+    <ol>
+      <li>⚙️에서 <b>백업 이름</b>과 <b>숫자 4자리 암호</b>(선택으로 힌트)를 정하면, 문장을 담을 때마다 자동으로 백업돼요.</li>
+      <li>새 기기에서는 ⚙️ → <b>다른 기기의 백업에서 복구하기</b>에 같은 암호를 넣으면 돌아와요.</li>
+    </ol>
+    <div class="warn"><b>암호는 다른 사람과 겹치지 않게 정하세요.</b> 같은 4자리 암호를 쓰는 사람이 있으면 서로의 백업이 덮어씌워질 수 있어요. 암호와 백업 이름은 꼭 기억해 두고, 중요한 문장은 방법 A로도 한 번씩 저장해 두세요.</div>
+  </section>
+
+  <section id="s8">
+    <h2><span class="no">8</span>그 밖의 기능</h2>
+    <ul>
+      <li><b>📄 PDF 모음집</b> — ⚙️ 안의 <b>PDF로 모음집 만들기</b>를 누르면 모은 문장이 작은 책처럼 정리돼요. 인쇄 화면에서 <b>PDF로 저장</b>을 고르세요.</li>
+      <li><b>🔗 공유하기</b> — 오른쪽 위 🔗에서 앱 주소의 QR코드와 링크 복사를 해요. 받은 사람은 자기만의 문장갈피를 따로 쓰게 돼요(문장이 섞이지 않아요).</li>
+      <li><b>다른 곳에서 문장 바로 담기</b> — 안드로이드에서 앱을 홈 화면에 설치했다면, 다른 앱에서 글자를 선택하고 <b>공유 → 문장갈피</b>를 고르면 문장이 채워진 채로 열려요.</li>
+    </ul>
+  </section>
+
+  <section id="s9">
+    <h2><span class="no">9</span>자주 묻는 질문</h2>
+    <details><summary>문장이 모두 사라졌어요.</summary><p>브라우저 데이터를 지웠거나 앱을 지웠다 다시 설치하면 사라져요. 백업해 둔 JSON 파일을 가져오거나, 백업 암호로 복구해 보세요.</p></details>
+    <details><summary>휴대폰과 PC에서 같은 문장을 보고 싶어요.</summary><p>자동 동기화는 없어요. 한쪽에서 JSON으로 내보내 다른 쪽에서 가져오거나, 백업 암호로 복구하세요.</p></details>
+    <details><summary>배경이나 화면이 새 모습으로 안 바뀌어요.</summary><p>앱을 새로고침하세요. 그래도 그대로면 앱을 완전히 닫았다가 다시 열어 주세요.</p></details>
+    <details><summary>수정 창이 잘못 열렸어요.</summary><p>아래쪽 <b>취소</b>, 위쪽 <b>✕</b>, 창 바깥의 어두운 곳을 누르기 중 편한 것으로 닫으면 문장은 그대로예요.</p></details>
+    <details><summary>효과가 너무 많거나 불편해요.</summary><p>기기의 <b>동작 줄이기</b> 설정을 켜면 먹 번짐, 계절 낙하 효과가 꺼져요.</p></details>
+    <details><summary>회원가입이나 요금이 있나요?</summary><p>없어요. 로그인 없이 무료로 쓰고, 내 문장은 내 기기에만 저장돼요.</p></details>
+  </section>
+
+  <p class="foot">문장갈피 · 마음에 남는 문장을 태그로 모아두는 곳</p>
+</div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quote-box-v14';
+const CACHE_NAME = 'quote-box-v15';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const APP_SHELL = [
   './season.css',
   './brush.css',
   './season.js',
+  './guide.html',
   './art/title.png',
   './art/spring.jpg',
   './art/summer.jpg',

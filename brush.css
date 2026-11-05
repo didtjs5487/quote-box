@@ -152,3 +152,6 @@ body { font-family: var(--font-body); }
 .brand::after { content: none; }
 .brand-img { display: block; height: 76px; width: auto; }
 .brand .seal { margin: 0 0 8px 6px; }
+
+/* 사용설명서 링크 */
+.guide-link { color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
